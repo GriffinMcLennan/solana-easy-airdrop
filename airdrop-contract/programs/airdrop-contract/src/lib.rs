@@ -11,11 +11,7 @@ pub mod constants;
 #[program]
 pub mod airdrop_contract {
     use super::*;
-    use crate::instructions::{initialize::{self, Initialize}, create_airdrop::{self, CreateAirdrop}};
-
-    pub fn initialize(ctx: Context<Initialize>) -> Result<()> {
-        initialize::handler(ctx)
-    }
+    use crate::instructions::{create_airdrop::{self, CreateAirdrop}};
 
     pub fn create_airdrop(ctx: Context<CreateAirdrop>, merkle_root_hash: [u8; 32], amount: u64) -> Result<()> {
         create_airdrop::handler(ctx, merkle_root_hash, amount)
