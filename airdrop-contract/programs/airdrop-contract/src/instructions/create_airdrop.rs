@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 use anchor_lang::prelude::InterfaceAccount;
 use anchor_spl::{associated_token::AssociatedToken, token::{self, TransferChecked}, token_interface::{Mint, TokenAccount, TokenInterface}};
 use crate::state::merkle_root::MerkleRoot;
-
+use crate::constants::MERKLE_ROOT_SEED;
 
 #[derive(Accounts)]
 #[instruction(merkle_root_hash: [u8; 32], amount: u64)]
@@ -26,8 +26,8 @@ pub struct CreateAirdrop<'info> {
     #[account(
         init,
         payer = authority,
-        space = MerkleRoot::LEN,
-        seeds = [b"merkle_root", merkle_root_hash.as_ref()],
+        space = 8 + MerkleRoot::INIT_SPACE,
+        seeds = [MERKLE_ROOT_SEED, merkle_root_hash.as_ref()],
         bump
     )]
     pub merkle_root: Account<'info, MerkleRoot>,

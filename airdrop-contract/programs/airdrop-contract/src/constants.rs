@@ -1,2 +1,1 @@
-// Project-wide constants
-pub const MAX_AIRDROP_AMOUNT: u64 = 1_000_000_000;
+pub const MERKLE_ROOT_SEED: &[u8] = b"merkle_root";
