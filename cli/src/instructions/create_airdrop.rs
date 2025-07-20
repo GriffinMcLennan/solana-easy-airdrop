@@ -250,6 +250,8 @@ mod tests {
             let mut hash = merkle_tree[index];
             let proof = create_proof(&merkle_tree, index);
 
+            println!("Proof: {:?}", proof);
+
             for neighbor_hash in proof {
                 if index % 2 == 0 {
                     hash = hash_children(&hash, &neighbor_hash);

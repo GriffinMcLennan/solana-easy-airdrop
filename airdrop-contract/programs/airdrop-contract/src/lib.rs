@@ -11,10 +11,14 @@ pub mod constants;
 #[program]
 pub mod airdrop_contract {
     use super::*;
-    use crate::instructions::{create_airdrop::{self, CreateAirdrop}};
+    use crate::instructions::{create_airdrop::{self, CreateAirdrop}, claim::{self, Claim}};
 
     pub fn create_airdrop(ctx: Context<CreateAirdrop>, merkle_root_hash: [u8; 32], amount: u64) -> Result<()> {
         create_airdrop::handler(ctx, merkle_root_hash, amount)
+    }
+
+    pub fn claim(ctx: Context<Claim>, proof: Vec<[u8; 32]>, amount: u64) -> Result<()> {
+        claim::handler(ctx, proof, amount)
     }
 }
 

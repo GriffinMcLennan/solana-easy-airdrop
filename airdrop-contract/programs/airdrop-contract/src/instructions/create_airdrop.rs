@@ -13,9 +13,11 @@ pub struct CreateAirdrop<'info> {
         mut,
         associated_token::mint = mint,
         associated_token::authority = authority,
+        associated_token::token_program = token_program,
     )]
     pub authority_token_account: InterfaceAccount<'info, TokenAccount>,
-    #[account(init_if_needed, 
+    #[account(
+        init, 
         payer = authority, 
         associated_token::mint = mint, 
         associated_token::authority = merkle_root,
