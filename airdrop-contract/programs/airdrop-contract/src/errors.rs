@@ -4,4 +4,6 @@ use anchor_lang::prelude::*;
 pub enum AirdropError {
     #[msg("Invalid amount")] 
     InvalidAmount,
+    #[msg("Invalid proof")] 
+    InvalidProof,
 }

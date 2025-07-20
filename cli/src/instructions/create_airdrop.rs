@@ -8,6 +8,7 @@ use std::{collections::BTreeMap, fs::File, path::PathBuf};
 struct ClaimEntry {
     amount: String,
     proof: Vec<[u8; 32]>,
+    leaf_index: usize,
 }
 
 #[derive(Serialize)]
@@ -71,7 +72,9 @@ fn parse_airdrop_csv(csv_path: &PathBuf) -> Result<(Vec<[u8; 32]>, Vec<String>, 
         let record: StringRecord = result?;
         let address = record.get(0).context("missing address field")?;
         let amount = record.get(1).context("missing amount field")?;
-        let leaf_bytes = [address.as_bytes(), amount.as_bytes()].concat();
+        // Parse amount as u64 and encode in little-endian like the on-chain program
+        let amount_u64: u64 = amount.parse().with_context(|| format!("invalid amount '{}'", amount))?;
+        let leaf_bytes = [address.as_bytes(), &amount_u64.to_le_bytes()].concat();
         leaves.push(hash(&leaf_bytes));
         addresses.push(address.to_string());
         amounts.push(amount.to_string());
@@ -119,12 +122,14 @@ fn write_airdrop_json(
     let mut claims = BTreeMap::new();
 
     for (i, (addr, amount)) in addresses.iter().zip(amounts).enumerate() {
-        let proof = create_proof(&tree, i + leaf_offset);
+        let leaf_index = i + leaf_offset;
+        let proof = create_proof(&tree, leaf_index);
         claims.insert(
             addr.clone(),
             ClaimEntry {
                 amount: amount.to_string(),
                 proof,
+                leaf_index,
             },
         );
     }
@@ -184,6 +189,37 @@ mod tests {
             merkle_tree,
             leaves,
         };
+    }
+
+    #[test]
+    fn example_merkle_tree2() {
+        let leaf1_address = "31HrWnNNM3QvZYNqN2F1CqWE2iiYfCV1pvLvTeZwyHBS";
+        let leaf1_amount = 20u64;
+        let leaf2_address = "4wcdH4iueQSMGV4JeJGbfM7wD8ZvVfMCQC3RgautKMG1";
+        let leaf2_amount = 40u64;
+        let leaf3_address = "7N3h2Zp4i9DzRbRGjtJHnRXnUbjKxLpsCnxmz7RLS1qZ";
+        let leaf3_amount = 30u64;
+        let leaf4_address = "7N3h2Zp4i9DzRbRGjtJHnRXnUbjKxLpsCnxmz7RLS1qZ";
+        let leaf4_amount = 30u64;
+
+        let leaf1_bytes = [leaf1_address.as_bytes(), &leaf1_amount.to_le_bytes()].concat();
+        let leaf2_bytes = [leaf2_address.as_bytes(), &leaf2_amount.to_le_bytes()].concat();
+        let leaf3_bytes = [leaf3_address.as_bytes(), &leaf3_amount.to_le_bytes()].concat();
+        let leaf4_bytes = [leaf4_address.as_bytes(), &leaf4_amount.to_le_bytes()].concat();
+        let leaves = vec![
+            hash(&leaf1_bytes),
+            hash(&leaf2_bytes),
+            hash(&leaf3_bytes),
+            hash(&leaf4_bytes),
+        ];
+        let merkle_tree = construct_merkle_tree(leaves.clone());
+
+        println!("Debug, leaf1: {:?}", leaf1_bytes);
+
+        // return MerkleTreeTestData {
+        //     merkle_tree,
+        //     leaves,
+        // };
     }
 
     #[test]

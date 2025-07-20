@@ -17,8 +17,8 @@ pub mod airdrop_contract {
         create_airdrop::handler(ctx, merkle_root_hash, amount)
     }
 
-    pub fn claim(ctx: Context<Claim>, proof: Vec<[u8; 32]>, amount: u64) -> Result<()> {
-        claim::handler(ctx, proof, amount)
+    pub fn claim(ctx: Context<Claim>, proof: Vec<[u8; 32]>, amount: u64, leaf_index: u32) -> Result<()> {
+        claim::handler(ctx, proof, amount, leaf_index)
     }
 }
 

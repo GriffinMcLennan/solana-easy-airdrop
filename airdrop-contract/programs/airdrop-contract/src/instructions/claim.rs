@@ -1,8 +1,8 @@
-use anchor_lang::{prelude::*, solana_program::hash::hashv};
-use anchor_spl::{associated_token::AssociatedToken, token::{self, TransferChecked}, token_interface::{Mint, TokenAccount, TokenInterface}};
+use anchor_lang::{prelude::*, solana_program::{hash::hashv, msg}};
+use anchor_spl::{associated_token::AssociatedToken, token_interface::{Mint, TokenAccount, TokenInterface}};
 use crate::state::{ClaimReceipt, MerkleRoot};
-use crate::constants::{MERKLE_ROOT_SEED, CLAIM_RECEIPT_SEED};
-
+use crate::constants::CLAIM_RECEIPT_SEED;
+use crate::errors::AirdropError;
 
 #[derive(Accounts)]
 pub struct Claim<'info> {
@@ -24,10 +24,6 @@ pub struct Claim<'info> {
     )]
     pub merkle_root_token_account: InterfaceAccount<'info, TokenAccount>,
     pub mint: InterfaceAccount<'info, Mint>,
-    #[account(
-        seeds = [MERKLE_ROOT_SEED, merkle_root.hash.as_ref()],
-        bump
-    )]
     pub merkle_root: Account<'info, MerkleRoot>,
     #[account(
         init,
@@ -42,16 +38,28 @@ pub struct Claim<'info> {
     pub associated_token_program: Program<'info, AssociatedToken>,
 }
 
-pub fn handler(ctx: Context<Claim>, proof: Vec<[u8; 32]>, amount: u64) -> Result<()> {
+pub fn handler(ctx: Context<Claim>, proof: Vec<[u8; 32]>, amount: u64, leaf_index: u32) -> Result<()> {
     let merkle_root = &ctx.accounts.merkle_root;
 
     let address = &ctx.accounts.authority.key().to_string();
-    let mut hash = hashv(&[address.as_bytes(), amount.to_le_bytes()]);
+    let mut hash = hashv(&[address.as_bytes(), &amount.to_le_bytes()]);
+    let mut proof_index = leaf_index;
+
+    msg!("Initial hash: {:?}", hash.as_ref());
 
     for neighbor_hash in proof {
-        
+        if proof_index % 2 == 0 {
+            hash = hashv(&[hash.as_ref(), neighbor_hash.as_ref()]);
+        } else {
+            hash = hashv(&[neighbor_hash.as_ref(), hash.as_ref()]);
+        }
+
+        proof_index /= 2;
+    }
+
+    if hash.as_ref() != merkle_root.hash {
+        return Err(AirdropError::InvalidProof.into());
     }
     
-    // let leaf = 
     Ok(())
 }
