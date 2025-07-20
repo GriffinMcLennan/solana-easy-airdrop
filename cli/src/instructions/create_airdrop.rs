@@ -1,19 +1,27 @@
 use anyhow::{Context, Result};
 use csv::StringRecord;
+use serde::Serialize;
 use sha2::{Digest, Sha256};
-use std::{fs::File, path::PathBuf};
+use std::{collections::BTreeMap, fs::File, path::PathBuf};
 
+#[derive(Serialize)]
+struct ClaimEntry {
+    amount: String,
+    proof: Vec<[u8; 32]>,
+}
 
+#[derive(Serialize)]
+struct AirdropData {
+    merkle_root: [u8; 32],
+    claims: BTreeMap<String, ClaimEntry>,
+}
 
 pub fn create_airdrop(csv_path: &PathBuf) -> Result<()> {
     let (leaves, addresses, amounts) = parse_airdrop_csv(csv_path)?;
     let merkle_tree = construct_merkle_tree(leaves);
-    
+    let leaf_offset = merkle_tree.len() / 2;
 
-
-
-
-
+    write_airdrop_json(&merkle_tree, &addresses, &amounts, leaf_offset)?;
     Ok(())
 }
 
@@ -58,9 +66,9 @@ fn parse_airdrop_csv(csv_path: &PathBuf) -> Result<(Vec<[u8; 32]>, Vec<String>, 
     let mut leaves = Vec::new();
     let mut addresses = Vec::new();
     let mut amounts = Vec::new();
-    
+
     for result in rdr.records() {
-        let record: StringRecord = result?;     
+        let record: StringRecord = result?;
         let address = record.get(0).context("missing address field")?;
         let amount = record.get(1).context("missing amount field")?;
         let leaf_bytes = [address.as_bytes(), amount.as_bytes()].concat();
@@ -73,10 +81,8 @@ fn parse_airdrop_csv(csv_path: &PathBuf) -> Result<(Vec<[u8; 32]>, Vec<String>, 
         anyhow::bail!("CSV contains no rows");
     }
 
-    Ok((leaves, addresses, amounts))   
+    Ok((leaves, addresses, amounts))
 }
-
-
 
 /// Construct the merkle tree
 fn construct_merkle_tree(mut leaves: Vec<[u8; 32]>) -> Vec<[u8; 32]> {
@@ -89,7 +95,6 @@ fn construct_merkle_tree(mut leaves: Vec<[u8; 32]>) -> Vec<[u8; 32]> {
         leaves.push([0u8; 32]);
     }
 
-
     for i in 0..tree_leaf_nodes {
         tree[i + tree_leaf_nodes] = leaves[i];
     }
@@ -98,22 +103,40 @@ fn construct_merkle_tree(mut leaves: Vec<[u8; 32]>) -> Vec<[u8; 32]> {
         tree[i] = hash_children(&tree[i * 2], &tree[i * 2 + 1]);
     }
 
-    
     tree
 }
 
 /// Create merkle tree output file
-fn write_airdrop_json(tree: &Vec<[u8; 32]>, leaves: &Vec<[u8; 32]>, addresses: &Vec<String>, amounts: &Vec<String>) -> Result<()> {
-    let mut file = File::create("airdrop.json").with_context(|| "Failed to create airdrop.json")?;
-    let json = serde_json::json!({
-        "tree": tree,
-        "leaves": leaves,
-        "addresses": addresses,
-        "amounts": amounts,
-    });
-    file.write_all(json.to_string().as_bytes()).with_context(|| "Failed to write airdrop.json")?;
+fn write_airdrop_json(
+    tree: &Vec<[u8; 32]>,
+    addresses: &Vec<String>,
+    amounts: &Vec<String>,
+    leaf_offset: usize,
+) -> Result<()> {
+    let file = File::create("airdrop.json").with_context(|| "Failed to create airdrop.json")?;
+    let merkle_root = tree[1];
+
+    let mut claims = BTreeMap::new();
+
+    for (i, (addr, amount)) in addresses.iter().zip(amounts).enumerate() {
+        let proof = create_proof(&tree, i + leaf_offset);
+        claims.insert(
+            addr.clone(),
+            ClaimEntry {
+                amount: amount.to_string(),
+                proof,
+            },
+        );
+    }
+
+    let data = AirdropData {
+        merkle_root,
+        claims,
+    };
+    serde_json::to_writer_pretty(file, &data).with_context(|| "Failed to write Airdrop JSON")?;
     Ok(())
 }
+
 fn create_proof(tree: &Vec<[u8; 32]>, leaf_index: usize) -> Vec<[u8; 32]> {
     let mut proof = Vec::new();
     let mut index = leaf_index;
@@ -127,7 +150,6 @@ fn create_proof(tree: &Vec<[u8; 32]>, leaf_index: usize) -> Vec<[u8; 32]> {
     proof
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -138,15 +160,30 @@ mod tests {
     }
 
     fn example_merkle_tree1() -> MerkleTreeTestData {
-        let leaf1 = [232, 15, 182, 90, 199, 3, 132, 189, 139, 171, 3, 88, 214, 11, 124, 190, 150, 222, 91, 45, 231, 192, 149, 224, 216, 105, 88, 82, 233, 198, 115, 175];
-        let leaf2 = [220, 96, 196, 202, 71, 96, 102, 23, 158, 19, 147, 24, 168, 148, 204, 170, 123, 211, 7, 49, 137, 228, 248, 5, 149, 5, 128, 79, 0, 135, 14, 77];
-        let leaf3 = [230, 226, 216, 88, 189, 89, 218, 3, 102, 82, 86, 77, 41, 165, 96, 27, 215, 211, 90, 183, 70, 50, 241, 8, 75, 144, 199, 135, 169, 158, 252, 89];
-        let leaf4 = [244, 18, 69, 111, 89, 21, 224, 175, 106, 216, 219, 195, 82, 29, 140, 143, 29, 190, 238, 18, 78, 140, 250, 251, 104, 219, 192, 128, 27, 255, 206, 184];
+        let leaf1 = [
+            232, 15, 182, 90, 199, 3, 132, 189, 139, 171, 3, 88, 214, 11, 124, 190, 150, 222, 91,
+            45, 231, 192, 149, 224, 216, 105, 88, 82, 233, 198, 115, 175,
+        ];
+        let leaf2 = [
+            220, 96, 196, 202, 71, 96, 102, 23, 158, 19, 147, 24, 168, 148, 204, 170, 123, 211, 7,
+            49, 137, 228, 248, 5, 149, 5, 128, 79, 0, 135, 14, 77,
+        ];
+        let leaf3 = [
+            230, 226, 216, 88, 189, 89, 218, 3, 102, 82, 86, 77, 41, 165, 96, 27, 215, 211, 90,
+            183, 70, 50, 241, 8, 75, 144, 199, 135, 169, 158, 252, 89,
+        ];
+        let leaf4 = [
+            244, 18, 69, 111, 89, 21, 224, 175, 106, 216, 219, 195, 82, 29, 140, 143, 29, 190, 238,
+            18, 78, 140, 250, 251, 104, 219, 192, 128, 27, 255, 206, 184,
+        ];
 
         let leaves = vec![leaf1, leaf2, leaf3, leaf4];
         let merkle_tree = construct_merkle_tree(leaves.clone());
 
-        return MerkleTreeTestData { merkle_tree, leaves };
+        return MerkleTreeTestData {
+            merkle_tree,
+            leaves,
+        };
     }
 
     #[test]
@@ -206,20 +243,19 @@ mod tests {
         assert_eq!(proof4[0], merkle_tree[leaf3_index]);
         assert_eq!(proof4[1], hash_children(&leaves[0], &leaves[1]));
 
+        let leaf_offset = merkle_tree.len() / 2;
 
         for i in 0..leaves.len() {
-            let mut index = leaves.len() + i;
+            let mut index = leaf_offset + i;
             let mut hash = merkle_tree[index];
             let proof = create_proof(&merkle_tree, index);
 
             for neighbor_hash in proof {
                 if index % 2 == 0 {
                     hash = hash_children(&hash, &neighbor_hash);
-
-                }   
-                else {
+                } else {
                     hash = hash_children(&neighbor_hash, &hash);
-                } 
+                }
                 index /= 2;
             }
         }
