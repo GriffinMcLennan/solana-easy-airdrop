@@ -53,7 +53,10 @@ pub fn handler(
     let cpi_ctx = CpiContext::new(cpi_program, accounts);
     token::transfer_checked(cpi_ctx, amount, ctx.accounts.mint.decimals)?;
 
+    let bump = ctx.bumps.merkle_root;
     let merkle_root = &mut ctx.accounts.merkle_root;
     merkle_root.hash = merkle_root_hash;
+    merkle_root.bump = bump;
+    
     Ok(())
 }

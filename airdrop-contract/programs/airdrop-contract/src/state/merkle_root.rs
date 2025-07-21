@@ -4,4 +4,5 @@ use anchor_lang::prelude::*;
 #[derive(InitSpace)]
 pub struct MerkleRoot {
     pub hash: [u8; 32],
+    pub bump: u8,
 }

@@ -2,7 +2,7 @@ import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import { AirdropContract } from "../../target/types/airdrop_contract";
 import { createMintAndFundCreator } from "../utils/createMintAndFundCreator";
-import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { kp1, kp2, kp3, kp4 } from './keypairs';
 
 const MERKLE_ROOT = [
@@ -153,6 +153,10 @@ describe("airdrop-contract", () => {
         merkleRoot,
       }).signers([kp2]).rpc();
       console.log("Your transaction signature", tx);
+
+      const kp2TokenAccount = await getAssociatedTokenAddress(mint, kp2.publicKey, undefined, TOKEN_PROGRAM_ID, undefined);
+      const balance = await connection.getTokenAccountBalance(kp2TokenAccount);
+      console.log("Balance:", balance.value.amount);
     }
     catch (e) {
       console.log(e);
