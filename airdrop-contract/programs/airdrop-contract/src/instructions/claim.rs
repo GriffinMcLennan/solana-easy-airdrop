@@ -76,6 +76,8 @@ pub fn handler(ctx: Context<Claim>, proof: Vec<[u8; 32]>, amount: u64, leaf_inde
 
     let cpi_ctx = CpiContext::new_with_signer(cpi_program, accounts, signer);
     token::transfer_checked(cpi_ctx, amount, ctx.accounts.mint.decimals)?;
+
+    ctx.accounts.claim_receipt.amount = amount;
     
     Ok(())
 }
