@@ -7,13 +7,13 @@ use std::{collections::BTreeMap, fs::File, path::PathBuf};
 #[derive(Serialize)]
 struct ClaimEntry {
     amount: String,
-    proof: Vec<[u8; 32]>,
     leaf_index: usize,
 }
 
 #[derive(Serialize)]
 struct AirdropData {
     merkle_root: [u8; 32],
+    merkle_tree: Vec<[u8; 32]>,
     claims: BTreeMap<String, ClaimEntry>,
 }
 
@@ -123,12 +123,10 @@ fn write_airdrop_json(
 
     for (i, (addr, amount)) in addresses.iter().zip(amounts).enumerate() {
         let leaf_index = i + leaf_offset;
-        let proof = create_proof(&tree, leaf_index);
         claims.insert(
             addr.clone(),
             ClaimEntry {
                 amount: amount.to_string(),
-                proof,
                 leaf_index,
             },
         );
@@ -137,11 +135,13 @@ fn write_airdrop_json(
     let data = AirdropData {
         merkle_root,
         claims,
+        merkle_tree: tree.to_vec(),
     };
     serde_json::to_writer_pretty(file, &data).with_context(|| "Failed to write Airdrop JSON")?;
     Ok(())
 }
 
+#[allow(dead_code)]
 fn create_proof(tree: &Vec<[u8; 32]>, leaf_index: usize) -> Vec<[u8; 32]> {
     let mut proof = Vec::new();
     let mut index = leaf_index;
