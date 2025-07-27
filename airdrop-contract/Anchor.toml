@@ -8,6 +8,9 @@ skip-lint = false
 [programs.localnet]
 airdrop_contract = "F6fHBUyYyaW14CxjSnJjLck8vMmWew3PbCnt5TMqRdZX"
 
+[programs.devnet]
+airdrop_contract = "F6fHBUyYyaW14CxjSnJjLck8vMmWew3PbCnt5TMqRdZX"
+
 [registry]
 url = "https://api.apr.dev"
 

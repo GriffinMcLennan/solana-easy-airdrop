@@ -1,37 +1,57 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
-import { useAirdropProgram } from './useAirdropProgram'
+import { useAirdropProgram } from './providers/AirdropProgramProvider'
+import { useCreateAirdrop } from './hooks/useCreateAirdrop'
+import { useClaimAirdrop } from './hooks/useClaimAirdrop';
+
+const MERKLE_ROOT =[
+  53,
+  9,
+  147,
+  191,
+  167,
+  219,
+  140,
+  104,
+  245,
+  10,
+  37,
+  110,
+  101,
+  7,
+  193,
+  153,
+  60,
+  13,
+  140,
+  44,
+  99,
+  201,
+  137,
+  46,
+  16,
+  237,
+  225,
+  14,
+  83,
+  49,
+  64,
+  158
+];
 
 function App() {
-  const [count, setCount] = useState(0)
   const airdropProgram = useAirdropProgram();
-
-
+  const createAirdrop = useCreateAirdrop();
+  const claimAirdrop = useClaimAirdrop();
 
   return (
     <>
       <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+
+       <p>Airdrop url</p>
+       <button onClick={() => createAirdrop(MERKLE_ROOT, 20)}>create airdrop</button>
+       <button onClick={() => claimAirdrop(MERKLE_ROOT)}>claim airdrop</button>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+
     </>
   )
 }
