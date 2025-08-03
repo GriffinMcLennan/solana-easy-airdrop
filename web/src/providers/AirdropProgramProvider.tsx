@@ -1,25 +1,20 @@
-import React, { createContext, useContext, useMemo, type ReactNode } from 'react';
-import { Program, AnchorProvider, type Idl } from '@coral-xyz/anchor';
-import { useAnchorWallet, useConnection } from '@solana/wallet-adapter-react';
-import idl from './idl.json';
-import type { AirdropContract } from './AirdropContractTypes';
+import React, { useMemo, type ReactNode } from "react";
+import { Program, AnchorProvider, type Idl } from "@coral-xyz/anchor";
+import { useAnchorWallet, useConnection } from "@solana/wallet-adapter-react";
+import idl from "./idl.json";
+import type { AirdropContract } from "./AirdropContractTypes";
+import {
+  AirdropProgramContext,
+  type AirdropProgramContextType,
+} from "../contexts/AirdropProgramContext";
 
-// Context type definition
-interface AirdropProgramContextType {
-  program: Program<AirdropContract> | null;
-  isLoading: boolean;
-}
-
-// Create the context
-const AirdropProgramContext = createContext<AirdropProgramContextType | undefined>(undefined);
-
-// Provider props interface
 interface AirdropProgramProviderProps {
   children: ReactNode;
 }
 
-// Provider component
-export const AirdropProgramProvider: React.FC<AirdropProgramProviderProps> = ({ children }) => {
+export const AirdropProgramProvider: React.FC<AirdropProgramProviderProps> = ({
+  children,
+}) => {
   const { connection } = useConnection();
   const wallet = useAnchorWallet();
 
@@ -35,11 +30,14 @@ export const AirdropProgramProvider: React.FC<AirdropProgramProviderProps> = ({ 
         AnchorProvider.defaultOptions()
       );
 
-      const program = new Program(idl as Idl, provider) as Program<AirdropContract>;
-      
+      const program = new Program(
+        idl as Idl,
+        provider
+      ) as Program<AirdropContract>;
+
       return { program, isLoading: false };
     } catch (error) {
-      console.error('Failed to initialize airdrop program:', error);
+      console.error("Failed to initialize airdrop program:", error);
       return { program: null, isLoading: false };
     }
   }, [connection, wallet]);
@@ -54,15 +52,4 @@ export const AirdropProgramProvider: React.FC<AirdropProgramProviderProps> = ({ 
       {children}
     </AirdropProgramContext.Provider>
   );
-};
-
-// Custom hook to use the context
-export const useAirdropProgram = (): AirdropProgramContextType => {
-  const context = useContext(AirdropProgramContext);
-  
-  if (context === undefined) {
-    throw new Error('useAirdropProgram must be used within an AirdropProgramProvider');
-  }
-  
-  return context;
 };

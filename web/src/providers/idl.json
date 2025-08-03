@@ -1,477 +1,296 @@
 {
-    "address": "F6fHBUyYyaW14CxjSnJjLck8vMmWew3PbCnt5TMqRdZX",
-    "metadata": {
-      "name": "airdrop_contract",
-      "version": "0.1.0",
-      "spec": "0.1.0",
-      "description": "Created with Anchor"
+  "address": "F6fHBUyYyaW14CxjSnJjLck8vMmWew3PbCnt5TMqRdZX",
+  "metadata": {
+    "name": "airdrop_contract",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Created with Anchor"
+  },
+  "instructions": [
+    {
+      "name": "claim",
+      "discriminator": [62, 198, 214, 193, 213, 159, 108, 210],
+      "accounts": [
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "authority_token_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "authority"
+              },
+              {
+                "kind": "account",
+                "path": "token_program"
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140, 151, 37, 143, 78, 36, 137, 241, 187, 61, 16, 41, 20, 142,
+                13, 131, 11, 90, 19, 153, 218, 255, 16, 132, 4, 142, 123, 216,
+                219, 233, 248, 89
+              ]
+            }
+          }
+        },
+        {
+          "name": "merkle_root_token_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "merkle_root"
+              },
+              {
+                "kind": "account",
+                "path": "token_program"
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140, 151, 37, 143, 78, 36, 137, 241, 187, 61, 16, 41, 20, 142,
+                13, 131, 11, 90, 19, 153, 218, 255, 16, 132, 4, 142, 123, 216,
+                219, 233, 248, 89
+              ]
+            }
+          }
+        },
+        {
+          "name": "mint"
+        },
+        {
+          "name": "merkle_root"
+        },
+        {
+          "name": "claim_receipt",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [114, 101, 99, 101, 105, 112, 116]
+              },
+              {
+                "kind": "account",
+                "path": "merkle_root"
+              },
+              {
+                "kind": "account",
+                "path": "authority"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "token_program"
+        },
+        {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        }
+      ],
+      "args": [
+        {
+          "name": "proof",
+          "type": {
+            "vec": {
+              "array": ["u8", 32]
+            }
+          }
+        },
+        {
+          "name": "amount",
+          "type": "u64"
+        },
+        {
+          "name": "leaf_index",
+          "type": "u32"
+        }
+      ]
     },
-    "instructions": [
-      {
-        "name": "claim",
-        "discriminator": [
-          62,
-          198,
-          214,
-          193,
-          213,
-          159,
-          108,
-          210
-        ],
-        "accounts": [
-          {
-            "name": "authority",
-            "writable": true,
-            "signer": true
-          },
-          {
-            "name": "authority_token_account",
-            "writable": true,
-            "pda": {
-              "seeds": [
-                {
-                  "kind": "account",
-                  "path": "authority"
-                },
-                {
-                  "kind": "account",
-                  "path": "token_program"
-                },
-                {
-                  "kind": "account",
-                  "path": "mint"
-                }
-              ],
-              "program": {
-                "kind": "const",
-                "value": [
-                  140,
-                  151,
-                  37,
-                  143,
-                  78,
-                  36,
-                  137,
-                  241,
-                  187,
-                  61,
-                  16,
-                  41,
-                  20,
-                  142,
-                  13,
-                  131,
-                  11,
-                  90,
-                  19,
-                  153,
-                  218,
-                  255,
-                  16,
-                  132,
-                  4,
-                  142,
-                  123,
-                  216,
-                  219,
-                  233,
-                  248,
-                  89
-                ]
+    {
+      "name": "create_airdrop",
+      "discriminator": [227, 135, 208, 66, 137, 177, 80, 94],
+      "accounts": [
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "authority_token_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "authority"
+              },
+              {
+                "kind": "account",
+                "path": "token_program"
+              },
+              {
+                "kind": "account",
+                "path": "mint"
               }
-            }
-          },
-          {
-            "name": "merkle_root_token_account",
-            "writable": true,
-            "pda": {
-              "seeds": [
-                {
-                  "kind": "account",
-                  "path": "merkle_root"
-                },
-                {
-                  "kind": "account",
-                  "path": "token_program"
-                },
-                {
-                  "kind": "account",
-                  "path": "mint"
-                }
-              ],
-              "program": {
-                "kind": "const",
-                "value": [
-                  140,
-                  151,
-                  37,
-                  143,
-                  78,
-                  36,
-                  137,
-                  241,
-                  187,
-                  61,
-                  16,
-                  41,
-                  20,
-                  142,
-                  13,
-                  131,
-                  11,
-                  90,
-                  19,
-                  153,
-                  218,
-                  255,
-                  16,
-                  132,
-                  4,
-                  142,
-                  123,
-                  216,
-                  219,
-                  233,
-                  248,
-                  89
-                ]
-              }
-            }
-          },
-          {
-            "name": "mint"
-          },
-          {
-            "name": "merkle_root"
-          },
-          {
-            "name": "claim_receipt",
-            "writable": true,
-            "pda": {
-              "seeds": [
-                {
-                  "kind": "const",
-                  "value": [
-                    114,
-                    101,
-                    99,
-                    101,
-                    105,
-                    112,
-                    116
-                  ]
-                },
-                {
-                  "kind": "account",
-                  "path": "merkle_root"
-                },
-                {
-                  "kind": "account",
-                  "path": "authority"
-                }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140, 151, 37, 143, 78, 36, 137, 241, 187, 61, 16, 41, 20, 142,
+                13, 131, 11, 90, 19, 153, 218, 255, 16, 132, 4, 142, 123, 216,
+                219, 233, 248, 89
               ]
             }
-          },
-          {
-            "name": "system_program",
-            "address": "11111111111111111111111111111111"
-          },
-          {
-            "name": "token_program"
-          },
-          {
-            "name": "associated_token_program",
-            "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
           }
-        ],
-        "args": [
-          {
-            "name": "proof",
-            "type": {
-              "vec": {
-                "array": [
-                  "u8",
-                  32
-                ]
+        },
+        {
+          "name": "merkle_root_token_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "merkle_root"
+              },
+              {
+                "kind": "account",
+                "path": "token_program"
+              },
+              {
+                "kind": "account",
+                "path": "mint"
               }
-            }
-          },
-          {
-            "name": "amount",
-            "type": "u64"
-          },
-          {
-            "name": "leaf_index",
-            "type": "u32"
-          }
-        ]
-      },
-      {
-        "name": "create_airdrop",
-        "discriminator": [
-          227,
-          135,
-          208,
-          66,
-          137,
-          177,
-          80,
-          94
-        ],
-        "accounts": [
-          {
-            "name": "authority",
-            "writable": true,
-            "signer": true
-          },
-          {
-            "name": "authority_token_account",
-            "writable": true,
-            "pda": {
-              "seeds": [
-                {
-                  "kind": "account",
-                  "path": "authority"
-                },
-                {
-                  "kind": "account",
-                  "path": "token_program"
-                },
-                {
-                  "kind": "account",
-                  "path": "mint"
-                }
-              ],
-              "program": {
-                "kind": "const",
-                "value": [
-                  140,
-                  151,
-                  37,
-                  143,
-                  78,
-                  36,
-                  137,
-                  241,
-                  187,
-                  61,
-                  16,
-                  41,
-                  20,
-                  142,
-                  13,
-                  131,
-                  11,
-                  90,
-                  19,
-                  153,
-                  218,
-                  255,
-                  16,
-                  132,
-                  4,
-                  142,
-                  123,
-                  216,
-                  219,
-                  233,
-                  248,
-                  89
-                ]
-              }
-            }
-          },
-          {
-            "name": "merkle_root_token_account",
-            "writable": true,
-            "pda": {
-              "seeds": [
-                {
-                  "kind": "account",
-                  "path": "merkle_root"
-                },
-                {
-                  "kind": "account",
-                  "path": "token_program"
-                },
-                {
-                  "kind": "account",
-                  "path": "mint"
-                }
-              ],
-              "program": {
-                "kind": "const",
-                "value": [
-                  140,
-                  151,
-                  37,
-                  143,
-                  78,
-                  36,
-                  137,
-                  241,
-                  187,
-                  61,
-                  16,
-                  41,
-                  20,
-                  142,
-                  13,
-                  131,
-                  11,
-                  90,
-                  19,
-                  153,
-                  218,
-                  255,
-                  16,
-                  132,
-                  4,
-                  142,
-                  123,
-                  216,
-                  219,
-                  233,
-                  248,
-                  89
-                ]
-              }
-            }
-          },
-          {
-            "name": "mint"
-          },
-          {
-            "name": "merkle_root",
-            "writable": true,
-            "pda": {
-              "seeds": [
-                {
-                  "kind": "const",
-                  "value": [
-                    109,
-                    101,
-                    114,
-                    107,
-                    108,
-                    101,
-                    95,
-                    114,
-                    111,
-                    111,
-                    116
-                  ]
-                },
-                {
-                  "kind": "arg",
-                  "path": "merkle_root_hash"
-                }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140, 151, 37, 143, 78, 36, 137, 241, 187, 61, 16, 41, 20, 142,
+                13, 131, 11, 90, 19, 153, 218, 255, 16, 132, 4, 142, 123, 216,
+                219, 233, 248, 89
               ]
             }
-          },
-          {
-            "name": "system_program",
-            "address": "11111111111111111111111111111111"
-          },
-          {
-            "name": "token_program"
-          },
-          {
-            "name": "associated_token_program",
-            "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
           }
-        ],
-        "args": [
-          {
-            "name": "merkle_root_hash",
-            "type": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
-          },
+        },
+        {
+          "name": "mint"
+        },
+        {
+          "name": "merkle_root",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [109, 101, 114, 107, 108, 101, 95, 114, 111, 111, 116]
+              },
+              {
+                "kind": "arg",
+                "path": "merkle_root_hash"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "token_program"
+        },
+        {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        }
+      ],
+      "args": [
+        {
+          "name": "merkle_root_hash",
+          "type": {
+            "array": ["u8", 32]
+          }
+        },
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "ClaimReceipt",
+      "discriminator": [223, 233, 11, 229, 124, 165, 207, 28]
+    },
+    {
+      "name": "MerkleRoot",
+      "discriminator": [30, 240, 94, 145, 74, 59, 138, 185]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "InvalidAmount",
+      "msg": "Invalid amount"
+    },
+    {
+      "code": 6001,
+      "name": "InvalidProof",
+      "msg": "Invalid proof"
+    }
+  ],
+  "types": [
+    {
+      "name": "ClaimReceipt",
+      "type": {
+        "kind": "struct",
+        "fields": [
           {
             "name": "amount",
             "type": "u64"
           }
         ]
       }
-    ],
-    "accounts": [
-      {
-        "name": "ClaimReceipt",
-        "discriminator": [
-          223,
-          233,
-          11,
-          229,
-          124,
-          165,
-          207,
-          28
-        ]
-      },
-      {
-        "name": "MerkleRoot",
-        "discriminator": [
-          30,
-          240,
-          94,
-          145,
-          74,
-          59,
-          138,
-          185
+    },
+    {
+      "name": "MerkleRoot",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "hash",
+            "type": {
+              "array": ["u8", 32]
+            }
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
         ]
       }
-    ],
-    "errors": [
-      {
-        "code": 6000,
-        "name": "InvalidAmount",
-        "msg": "Invalid amount"
-      },
-      {
-        "code": 6001,
-        "name": "InvalidProof",
-        "msg": "Invalid proof"
-      }
-    ],
-    "types": [
-      {
-        "name": "ClaimReceipt",
-        "type": {
-          "kind": "struct",
-          "fields": [
-            {
-              "name": "amount",
-              "type": "u64"
-            }
-          ]
-        }
-      },
-      {
-        "name": "MerkleRoot",
-        "type": {
-          "kind": "struct",
-          "fields": [
-            {
-              "name": "hash",
-              "type": {
-                "array": [
-                  "u8",
-                  32
-                ]
-              }
-            },
-            {
-              "name": "bump",
-              "type": "u8"
-            }
-          ]
-        }
-      }
-    ]
-  }
+    }
+  ]
+}
