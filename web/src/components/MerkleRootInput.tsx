@@ -41,34 +41,35 @@ export const MerkleRootInput: React.FC<MerkleRootInputProps> = ({
   };
 
   return (
-    <div>
-      <div>
-        <label>Merkle Root: </label>
-        <input
-          type="text"
-          value={merkleRootInput}
-          onChange={handleMerkleRootChange}
-          style={{ width: "400px", margin: "10px" }}
-        />
-        <button onClick={updateMerkleRoot}>Update Merkle Root</button>
+    <div className="merkle-root-input">
+      <div className="input-group">
+        <label htmlFor="merkle-root">Merkle Root:</label>
+        <div className="input-row">
+          <input
+            id="merkle-root"
+            type="text"
+            value={merkleRootInput}
+            onChange={handleMerkleRootChange}
+            placeholder="Enter 32 comma-separated numbers (0-255)"
+          />
+          <button className="secondary-button" onClick={updateMerkleRoot}>
+            Update Merkle Root
+          </button>
+        </div>
       </div>
-      <div>
-        <label>Current Merkle Root (Hex): </label>
-        <div
-          style={{
-            margin: "10px",
-            fontFamily: "monospace",
-            wordBreak: "break-all",
-          }}
-        >
+      
+      <div className="info-group">
+        <label>Current Merkle Root (Hex):</label>
+        <div className="merkle-display hex">
           {merkleRoot
             .map((byte) => byte.toString(16).padStart(2, "0"))
             .join("")}
         </div>
       </div>
-      <div>
-        <label>Current Merkle Root (Bytes): </label>
-        <div style={{ margin: "10px", fontFamily: "monospace" }}>
+      
+      <div className="info-group">
+        <label>Current Merkle Root (Bytes):</label>
+        <div className="merkle-display bytes">
           [{merkleRoot.join(", ")}]
         </div>
       </div>

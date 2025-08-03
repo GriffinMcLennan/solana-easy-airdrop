@@ -2,7 +2,226 @@
   max-width: 1280px;
   margin: 0 auto;
   padding: 2rem;
+}
+
+/* Global Styles */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  background-color: #f5f5f7;
+  color: #333;
+}
+
+.app-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 30px 20px;
+}
+
+/* Header Styles */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.header h1 {
+  margin: 0;
+  font-weight: 600;
+  color: #1d1d1f;
+  font-size: 28px;
+}
+
+/* Content Styles */
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.section {
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 25px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e0e0e0;
+}
+
+.section h2 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #1d1d1f;
+  font-weight: 500;
+  font-size: 22px;
+}
+
+.section-description {
+  color: #86868b;
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 15px;
+}
+
+/* Input Styles */
+.input-group {
+  margin-bottom: 20px;
+}
+
+.input-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #555;
+  font-size: 16px;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 14px;
+  border: 1px solid #d2d2d7;
+  border-radius: 8px;
+  font-size: 16px;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+.input-group input:focus {
+  outline: none;
+  border-color: #0071e3;
+  box-shadow: 0 0 0 2px rgba(0, 113, 227, 0.2);
+}
+
+/* Button Styles */
+.action-button {
+  background-color: #0071e3;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 14px 28px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 10px;
+  box-shadow: 0 2px 6px rgba(0, 113, 227, 0.3);
+  min-width: 150px;
+}
+
+.action-button:hover {
+  background-color: #0077ed;
+  box-shadow: 0 4px 12px rgba(0, 113, 227, 0.4);
+  transform: translateY(-1px);
+}
+
+.action-button:active {
+  transform: translateY(0);
+}
+
+.action-button:disabled {
+  background-color: #d2d2d7;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.action-button:disabled:hover {
+  background-color: #d2d2d7;
+  box-shadow: none;
+  transform: none;
+}
+
+.secondary-button {
+  background-color: #f5f5f7;
+  color: #0071e3;
+  border: 1px solid #d2d2d7;
+  border-radius: 8px;
+  padding: 12px 20px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-left: 10px;
+  white-space: nowrap;
+}
+
+.secondary-button:hover {
+  background-color: #e0e0e0;
+  border-color: #0071e3;
+}
+
+.secondary-button:disabled {
+  background-color: #f5f5f7;
+  color: #86868b;
+  border-color: #d2d2d7;
+  cursor: not-allowed;
+}
+
+/* Merkle Root Input Styles */
+.merkle-root-input {
+  margin-top: 20px;
+}
+
+.input-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.input-row input {
+  flex: 1;
+}
+
+.info-group {
+  margin-top: 20px;
+}
+
+.info-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #555;
+}
+
+.merkle-display {
+  padding: 12px;
+  background-color: #f5f5f7;
+  border-radius: 8px;
+  font-family: monospace;
+  font-size: 14px;
+  word-break: break-all;
+}
+
+.merkle-display.bytes {
+  font-size: 12px;
+}
+
+/* Status Message Styles */
+.status-message {
+  margin-top: 20px;
+  padding: 15px;
+  border-radius: 8px;
   text-align: center;
+  font-weight: 500;
+}
+
+.status-message:not(:empty) {
+  background-color: #e0e0e0;
+  border: 1px solid #d2d2d7;
+}
+
+/* Footer Styles */
+.footer {
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid #e0e0e0;
+  text-align: center;
+  color: #86868b;
+  font-size: 14px;
 }
 
 .logo {
@@ -11,9 +230,11 @@
   will-change: filter;
   transition: filter 300ms;
 }
+
 .logo:hover {
   filter: drop-shadow(0 0 2em #646cffaa);
 }
+
 .logo.react:hover {
   filter: drop-shadow(0 0 2em #61dafbaa);
 }
