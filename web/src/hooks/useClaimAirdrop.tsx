@@ -81,6 +81,7 @@ export function useClaimAirdrop() {
       transaction.feePayer = wallet.publicKey;
 
       const signedTx = await wallet.signTransaction(transaction);
+
       const signature = await connection.sendRawTransaction(
         signedTx.serialize()
       );
