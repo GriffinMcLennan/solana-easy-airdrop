@@ -19,7 +19,9 @@ interface ClaimResponse {
 
 async function getUserClaimAndProof(rootHex: string, address: string) {
   const response = await fetch(
-    `http://localhost:5000/api/airdrop/${rootHex}/${address}`
+    `${
+      import.meta.env.VITE_AIRDROP_SERVER_URL
+    }/api/airdrop/${rootHex}/${address}`
   );
 
   if (!response.ok) {
