@@ -3,7 +3,7 @@ import { useAirdropProgram } from "./useAirdropProgram";
 import { useAnchorWallet, useConnection } from "@solana/wallet-adapter-react";
 import { useCallback } from "react";
 import { PublicKey, Transaction } from "@solana/web3.js";
-import { TOKEN_PROGRAM_ID, AccountLayout } from "@solana/spl-token";
+import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 
 interface ClaimEntry {
   amount: string;
@@ -48,7 +48,6 @@ export function useClaimAirdrop() {
         throw new Error("Program or wallet not initialized");
       }
 
-      // Convert merkleRootHash to hex string
       const rootHex = numberArrayToHex(merkleRootHash);
       const address = wallet.publicKey?.toString();
 
@@ -62,24 +61,8 @@ export function useClaimAirdrop() {
         program.programId
       )[0];
 
-      // Find token accounts owned by the merkle root to determine the mint
-      const tokenAccounts = await connection.getTokenAccountsByOwner(
-        merkleRoot,
-        {
-          programId: TOKEN_PROGRAM_ID,
-        }
-      );
-
-      if (tokenAccounts.value.length === 0) {
-        throw new Error("No token accounts found for this merkle root");
-      }
-
-      // Get the mint from the first (and should be only) token account
-      const tokenAccountInfo = tokenAccounts.value[0];
-      const tokenAccountData = AccountLayout.decode(
-        tokenAccountInfo.account.data
-      );
-      const mint = new PublicKey(tokenAccountData.mint);
+      const merkleRootData = await program.account.merkleRoot.fetch(merkleRoot);
+      const mint = merkleRootData.mint;
 
       const claimIx = await program.methods
         .claim(proof, new BN(claim.amount), claim.leaf_index)

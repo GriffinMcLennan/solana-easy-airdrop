@@ -410,6 +410,10 @@ export type AirdropContract = {
           {
             name: "bump";
             type: "u8";
+          },
+          {
+            name: "mint";
+            type: "pubkey";
           }
         ];
       };

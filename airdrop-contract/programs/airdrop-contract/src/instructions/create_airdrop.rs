@@ -57,6 +57,7 @@ pub fn handler(
     let merkle_root = &mut ctx.accounts.merkle_root;
     merkle_root.hash = merkle_root_hash;
     merkle_root.bump = bump;
+    merkle_root.mint = ctx.accounts.mint.key();
     
     Ok(())
 }
