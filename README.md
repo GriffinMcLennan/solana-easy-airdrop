@@ -4,23 +4,28 @@ A merkle tree-based token airdrop system for Solana. Create airdrops from a CSV 
 
 ## Architecture
 
-```
-┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│   CSV File  │────▶│     CLI     │────▶│ airdrop.json│
-│ (addresses) │     │ (merkle gen)│     │ (tree data) │
-└─────────────┘     └─────────────┘     └──────┬──────┘
-                                               │
-                    ┌──────────────────────────┴──────────────────┐
-                    ▼                                             ▼
-┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│   Server    │◀────│ airdrop.json│     │     CLI     │────▶│  Contract   │
-│ (proofs API)│     │             │     │   (deploy)  │     │  (on-chain) │
-└──────┬──────┘     └─────────────┘     └─────────────┘     └──────▲──────┘
-       │                                                          │
-       │            ┌─────────────┐                               │
-       └───────────▶│   Web App   │───────────────────────────────┘
-                    │   (claim)   │
-                    └─────────────┘
+```mermaid
+flowchart TB
+    subgraph Setup["Setup Phase"]
+        CSV["CSV File<br/>(addresses, amounts)"]
+        CLI1["CLI<br/>create-airdrop"]
+        JSON["airdrop.json<br/>(merkle tree)"]
+        CSV --> CLI1 --> JSON
+    end
+
+    subgraph Deployment["Deployment Phase"]
+        CLI2["CLI<br/>deploy-airdrop"]
+        Contract["Solana Contract<br/>(on-chain)"]
+        JSON --> CLI2 --> Contract
+    end
+
+    subgraph Runtime["Runtime Phase"]
+        Server["Server<br/>(proofs API)"]
+        WebApp["Web App<br/>(claim UI)"]
+        JSON --> Server
+        Server --> WebApp
+        WebApp --> Contract
+    end
 ```
 
 ## Components
@@ -101,7 +106,7 @@ FEHVBLQa7gYKdVT3jc2NQviSs3EgzTyD3k2yyPm5pTXP,100
 Run the CLI to generate the merkle tree:
 
 ```bash
-cargo run -- create-merkle-tree --input ./airdrop.csv
+cargo run -- create-airdrop --input ./airdrop.csv
 ```
 
 This creates `airdrop.json` containing:
@@ -207,12 +212,12 @@ The web app runs on `http://localhost:5173`.
 
 ## CLI Reference
 
-### `create-merkle-tree`
+### `create-airdrop`
 
 Generate a merkle tree from a CSV file.
 
 ```bash
-cargo run -- create-merkle-tree --input <CSV_FILE>
+cargo run -- create-airdrop --input <CSV_FILE>
 ```
 
 **Input:** CSV file with `address,amount` columns
