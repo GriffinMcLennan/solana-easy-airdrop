@@ -41,6 +41,49 @@ A merkle tree-based token airdrop system for Solana. Create airdrops from a CSV 
 - [Bun](https://bun.sh/) (for server)
 - [pnpm](https://pnpm.io/) (for web)
 
+## Rust Toolchain Setup
+
+This project requires two different Rust toolchains due to Solana/Anchor constraints:
+
+1. **`solana` toolchain** (rustc 1.84+) - Used by the CLI for `anchor-client` and `solana-sdk` dependencies
+2. **Rust 1.79.0** - Used by Anchor for building the on-chain program (BPF compilation)
+
+### Why Two Toolchains?
+
+- The CLI uses `anchor-client` to interact with the deployed program, which depends on `solana-sdk` 2.x
+- `solana-sdk` 2.x requires Rust 1.83+
+- Anchor's BPF compiler (`cargo-build-sbf`) requires Rust 1.79.0
+- These can't use the same toolchain, so each directory has its own `rust-toolchain.toml`
+
+### Toolchain Files
+
+| File | Toolchain | Purpose |
+|------|-----------|---------|
+| `/rust-toolchain.toml` | `solana` | CLI builds (solana-sdk 2.x compatible) |
+| `/airdrop-contract/rust-toolchain.toml` | `1.79.0` | Anchor/BPF builds |
+
+### Installing the Solana Toolchain
+
+The `solana` toolchain is installed automatically when you install Anchor/Solana CLI tools. Verify with:
+
+```bash
+rustup run solana rustc --version  # Should show 1.84.x
+```
+
+### IDE Setup (VS Code)
+
+rust-analyzer may have issues with the `solana` toolchain's proc-macro server. The `.vscode/settings.json` configures rust-analyzer to use the `stable` toolchain for analysis while builds still use the correct toolchain:
+
+```json
+{
+    "rust-analyzer.server.extraEnv": {
+        "RUSTUP_TOOLCHAIN": "stable"
+    }
+}
+```
+
+This means IDE features (autocomplete, error checking) use `stable`, but `cargo build` respects `rust-toolchain.toml`.
+
 ## Quick Start
 
 ### 1. Generate Merkle Tree from CSV
