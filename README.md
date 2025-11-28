@@ -2,6 +2,14 @@
 
 A merkle tree-based token airdrop system for Solana. Create airdrops from a CSV file, deploy on-chain, and allow users to claim their tokens with cryptographic proofs.
 
+## Why Solana Easy Airdrop?
+
+- **Clean, beautiful claim interface**: A polished user experience for airdrop claiming on Solana
+- **Minimal frontend requirements**: All data is stored server-side; the frontend fetches only what it needs for each claim
+- **Flexible merkle root switching**: Easily claim from different airdrops by changing the merkle root, no reinitialization required
+- **Shared program deployment**: A single deployed program can be reused by anyone creating new merkle roots, making it extremely cost-efficient
+- **Simple integration**: Minimal boilerplate to integrate airdrop claiming into any Solana application
+
 ## Architecture
 
 ```mermaid
@@ -355,6 +363,32 @@ solana-easy-airdrop/
 3. Walks up the tree using proof siblings
 4. Verifies computed root matches stored root
 5. If valid, transfers tokens and creates receipt (prevents double-claim)
+
+## Design Decisions
+
+### Merkle Tree Storage Efficiency
+
+We store the **full merkle tree** in `airdrop.json` rather than pre-computed proofs for each address. This significantly reduces storage requirements.
+
+**Space Complexity:**
+
+| Approach | Storage | Formula |
+|----------|---------|---------|
+| Full tree | O(n) | `2n × 32 bytes` |
+| Pre-computed proofs | O(n log n) | `n × log₂(n) × 32 bytes` |
+
+The full tree is more efficient both asymptotically and in practice:
+
+**Real-world comparison (32 bytes per hash):**
+
+| Recipients | Full Tree | Pre-computed Proofs | Winner |
+|------------|-----------|---------------------|--------|
+| 1,000 | 64 KB | 320 KB | Tree (5x smaller) |
+| 10,000 | 640 KB | 4.2 MB | Tree (6.5x smaller) |
+| 100,000 | 6.4 MB | 53 MB | Tree (8x smaller) |
+| 1,000,000 | 64 MB | 640 MB | Tree (10x smaller) |
+
+The full tree approach also enables **on-demand proof generation**—proofs are computed only when requested, reducing server memory usage and allowing efficient streaming from disk.
 
 ## Configuration
 
