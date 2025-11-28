@@ -15,6 +15,7 @@ struct AirdropData {
     merkle_root: [u8; 32],
     merkle_tree: Vec<[u8; 32]>,
     claims: BTreeMap<String, ClaimEntry>,
+    mint: Option<String>,
 }
 
 pub fn create_airdrop(csv_path: &PathBuf) -> Result<()> {
@@ -136,6 +137,7 @@ fn write_airdrop_json(
         merkle_root,
         claims,
         merkle_tree: tree.to_vec(),
+        mint: None,
     };
     serde_json::to_writer_pretty(file, &data).with_context(|| "Failed to write Airdrop JSON")?;
     Ok(())

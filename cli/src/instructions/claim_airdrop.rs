@@ -24,12 +24,14 @@ struct AirdropJson {
     merkle_root: [u8; 32],
     merkle_tree: Vec<Vec<u8>>,
     claims: std::collections::BTreeMap<String, ClaimInfo>,
+    #[serde(default)]
+    mint: Option<String>,
 }
 
 #[derive(Debug)]
 pub struct ClaimAirdropArgs {
     pub json_path: PathBuf,
-    pub mint: String,
+    pub mint: Option<String>,
     pub address: Option<String>,
     pub network: Network,
     pub program_id: String,
@@ -68,7 +70,20 @@ pub fn claim_airdrop(args: ClaimAirdropArgs) -> Result<()> {
 
     let merkle_root_hash = airdrop_data.merkle_root;
     let program_id = Pubkey::from_str(&args.program_id)?;
-    let mint = Pubkey::from_str(&args.mint)?;
+
+    // Determine mint - either from args or from JSON
+    let mint = match &args.mint {
+        Some(mint_str) => Pubkey::from_str(mint_str)?,
+        None => {
+            let mint_str = airdrop_data.mint.as_ref().ok_or_else(|| {
+                anyhow::anyhow!(
+                    "No mint address found. Either provide --mint or run deploy-airdrop first to populate the mint in the JSON."
+                )
+            })?;
+            Pubkey::from_str(mint_str)
+                .map_err(|e| anyhow::anyhow!("Invalid mint address in JSON: {}", e))?
+        }
+    };
 
     // Load keypair
     let payer = read_keypair_file(&args.keypair_path)

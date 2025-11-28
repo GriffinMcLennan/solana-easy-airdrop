@@ -54,9 +54,9 @@ enum Commands {
         #[arg(long, value_name = "FILE")]
         json: PathBuf,
 
-        /// Token mint address for the airdrop
+        /// Token mint address (optional - reads from airdrop.json if not provided)
         #[arg(long)]
-        mint: String,
+        mint: Option<String>,
 
         /// Address to claim for (defaults to keypair's address)
         #[arg(long)]
