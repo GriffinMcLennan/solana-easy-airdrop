@@ -58,7 +58,7 @@ impl FromStr for Network {
 }
 
 impl Network {
-    fn to_cluster(&self) -> Cluster {
+    pub fn to_cluster(&self) -> Cluster {
         match self {
             Network::Devnet => Cluster::Devnet,
             Network::Testnet => Cluster::Testnet,
@@ -67,7 +67,7 @@ impl Network {
         }
     }
 
-    fn name(&self) -> &'static str {
+    pub fn name(&self) -> &'static str {
         match self {
             Network::Devnet => "devnet",
             Network::Testnet => "testnet",

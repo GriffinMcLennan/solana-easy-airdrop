@@ -10,16 +10,16 @@ A merkle tree-based token airdrop system for Solana. Create airdrops from a CSV 
 │ (addresses) │     │ (merkle gen)│     │ (tree data) │
 └─────────────┘     └─────────────┘     └──────┬──────┘
                                                │
-                    ┌──────────────────────────┘
-                    ▼
-┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│   Server    │◀────│ airdrop.json│     │  Contract   │
-│ (proofs API)│     │             │     │  (on-chain) │
-└──────┬──────┘     └─────────────┘     └──────▲──────┘
-       │                                       │
-       │            ┌─────────────┐            │
-       └───────────▶│   Web App   │────────────┘
-                    │(create/claim)│
+                    ┌──────────────────────────┴──────────────────┐
+                    ▼                                             ▼
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│   Server    │◀────│ airdrop.json│     │     CLI     │────▶│  Contract   │
+│ (proofs API)│     │             │     │   (deploy)  │     │  (on-chain) │
+└──────┬──────┘     └─────────────┘     └─────────────┘     └──────▲──────┘
+       │                                                          │
+       │            ┌─────────────┐                               │
+       └───────────▶│   Web App   │───────────────────────────────┘
+                    │   (claim)   │
                     └─────────────┘
 ```
 
@@ -27,10 +27,11 @@ A merkle tree-based token airdrop system for Solana. Create airdrops from a CSV 
 
 | Directory | Description |
 |-----------|-------------|
-| `cli/` | Rust CLI tool to generate merkle trees from CSV files |
+| `cli/` | Rust CLI for merkle tree generation and on-chain deployment |
 | `airdrop-contract/` | Anchor smart contract for on-chain airdrop management |
 | `server/` | Express server that serves merkle proofs to claimants |
-| `web/` | React frontend for creating and claiming airdrops |
+| `web/` | React frontend for claiming airdrops |
+| `sdk/` | React hooks package (`@solana-easy-airdrop/react`) for integration |
 
 ## Prerequisites
 
@@ -39,7 +40,7 @@ A merkle tree-based token airdrop system for Solana. Create airdrops from a CSV 
 - [Anchor](https://www.anchor-lang.com/docs/installation) (v0.31+)
 - [Node.js](https://nodejs.org/) (v18+)
 - [Bun](https://bun.sh/) (for server)
-- [pnpm](https://pnpm.io/) (for web)
+- [pnpm](https://pnpm.io/) (for web and sdk)
 
 ## Rust Toolchain Setup
 
@@ -100,8 +101,7 @@ FEHVBLQa7gYKdVT3jc2NQviSs3EgzTyD3k2yyPm5pTXP,100
 Run the CLI to generate the merkle tree:
 
 ```bash
-cd cli
-cargo run -- create-airdrop --input ../airdrop_example.csv
+cargo run -- create-merkle-tree --input ./airdrop.csv
 ```
 
 This creates `airdrop.json` containing:
@@ -130,12 +130,45 @@ Note the program ID from the deployment output. It should match the ID in `Ancho
 F6fHBUyYyaW14CxjSnJjLck8vMmWew3PbCnt5TMqRdZX
 ```
 
-### 3. Set Up the Server
+### 3. Deploy the Airdrop On-Chain
+
+Use the CLI to deploy the airdrop. This will create a new token mint and initialize the airdrop:
+
+```bash
+cargo run -- deploy-airdrop --json ./airdrop.json --network localnet
+```
+
+The command will output:
+- The new mint address (if not provided)
+- The merkle root PDA
+- Transaction signature with explorer link
+
+#### Deploy Options
+
+```bash
+# Deploy to localnet with auto-created mint
+cargo run -- deploy-airdrop --json ./airdrop.json --network localnet
+
+# Deploy to devnet (default network)
+cargo run -- deploy-airdrop --json ./airdrop.json
+
+# Deploy with an existing mint
+cargo run -- deploy-airdrop --json ./airdrop.json --mint <MINT_ADDRESS>
+
+# Use custom keypair and program ID
+cargo run -- deploy-airdrop --json ./airdrop.json \
+  --keypair ~/.config/solana/my-keypair.json \
+  --program-id <PROGRAM_ID>
+```
+
+The total token amount is automatically calculated from the claims in `airdrop.json`.
+
+### 4. Set Up the Server
 
 Copy the generated `airdrop.json` to the server:
 
 ```bash
-cp cli/airdrop.json server/airdrop_jsons/
+cp airdrop.json server/airdrop_jsons/
 ```
 
 Install dependencies and start the server:
@@ -149,7 +182,7 @@ bun run start
 The server runs on `http://localhost:5000` and exposes:
 - `GET /api/airdrop/:rootHex/:address` - Returns claim data and merkle proof
 
-### 4. Set Up the Web App
+### 5. Set Up the Web App
 
 Configure environment:
 
@@ -172,21 +205,39 @@ pnpm dev
 
 The web app runs on `http://localhost:5173`.
 
+## CLI Reference
+
+### `create-merkle-tree`
+
+Generate a merkle tree from a CSV file.
+
+```bash
+cargo run -- create-merkle-tree --input <CSV_FILE>
+```
+
+**Input:** CSV file with `address,amount` columns
+**Output:** `airdrop.json` file
+
+### `deploy-airdrop`
+
+Deploy an airdrop on-chain.
+
+```bash
+cargo run -- deploy-airdrop --json <JSON_FILE> [OPTIONS]
+```
+
+**Options:**
+| Option | Description | Default |
+|--------|-------------|---------|
+| `--json <FILE>` | Path to airdrop.json (required) | - |
+| `--mint <ADDRESS>` | Existing token mint address | Creates new mint |
+| `--network <NETWORK>` | Network: localnet, devnet, testnet, mainnet | devnet |
+| `--program-id <ID>` | Airdrop program ID | From Anchor.toml |
+| `--keypair <PATH>` | Keypair file path | ~/.config/solana/id.json |
+
 ## Usage
 
-### Creating an Airdrop
-
-1. Connect your wallet in the web app
-2. Enter the merkle root (from `airdrop.json`)
-3. Enter the total airdrop amount
-4. Click "Create Airdrop"
-
-This will:
-- Create a new SPL token mint
-- Mint tokens to your wallet
-- Initialize the on-chain airdrop with the merkle root
-
-### Claiming an Airdrop
+### Claiming an Airdrop (Web App)
 
 1. Connect your wallet (must be an address in the original CSV)
 2. Enter the merkle root for the airdrop
@@ -197,13 +248,39 @@ The app will:
 - Submit the claim transaction with the proof
 - Transfer your allocated tokens
 
+### Using the SDK
+
+The `@solana-easy-airdrop/react` package provides hooks for integration:
+
+```tsx
+import { AirdropProgramProvider, useClaimAirdrop } from '@solana-easy-airdrop/react';
+
+function App() {
+  return (
+    <AirdropProgramProvider>
+      <ClaimButton />
+    </AirdropProgramProvider>
+  );
+}
+
+function ClaimButton() {
+  const claimAirdrop = useClaimAirdrop();
+
+  const handleClaim = async () => {
+    const { signature } = await claimAirdrop(merkleRoot, mintAddress);
+    console.log('Claimed!', signature);
+  };
+
+  return <button onClick={handleClaim}>Claim</button>;
+}
+```
+
 ## Development
 
 ### Running Tests
 
 CLI tests:
 ```bash
-cd cli
 cargo test
 ```
 
@@ -217,29 +294,39 @@ anchor test
 
 ```
 solana-easy-airdrop/
-├── airdrop_example.csv      # Example airdrop CSV
+├── Cargo.toml               # Workspace root
+├── rust-toolchain.toml      # Solana toolchain for CLI
 ├── cli/
+│   ├── Cargo.toml
+│   ├── rust-toolchain.toml  # (inherits from root)
 │   └── src/
-│       ├── main.rs          # CLI entry point
+│       ├── main.rs
 │       └── instructions/
-│           └── create_airdrop.rs  # Merkle tree generation
+│           ├── create_airdrop.rs   # Merkle tree generation
+│           └── deploy_airdrop.rs   # On-chain deployment
 ├── airdrop-contract/
+│   ├── Cargo.toml           # Anchor workspace
+│   ├── rust-toolchain.toml  # Rust 1.79.0 for BPF
 │   └── programs/
 │       └── airdrop-contract/
 │           └── src/
-│               ├── lib.rs           # Program entry
-│               ├── instructions/    # create_airdrop, claim
-│               ├── state/           # MerkleRoot, ClaimReceipt
-│               └── errors.rs        # Custom errors
+│               ├── lib.rs
+│               ├── instructions/   # create_airdrop, claim
+│               ├── state/          # MerkleRoot, ClaimReceipt
+│               └── errors.rs
 ├── server/
 │   ├── server.ts            # Express API
-│   ├── airdrop.ts           # Proof generation logic
-│   └── airdrop_jsons/       # Store airdrop JSON files here
+│   ├── airdrop.ts           # Proof generation
+│   └── airdrop_jsons/       # Store airdrop JSON files
+├── sdk/
+│   └── src/
+│       ├── index.ts
+│       ├── useAirdropProgram.ts
+│       ├── useCreateAirdrop.ts
+│       └── useClaimAirdrop.ts
 └── web/
     └── src/
-        ├── App.tsx          # Main UI
-        ├── hooks/           # useCreateAirdrop, useClaimAirdrop
-        └── providers/       # Solana wallet & program providers
+        └── App.tsx
 ```
 
 ## How It Works
