@@ -15,17 +15,22 @@ flowchart TB
 
     subgraph Deployment["Deployment Phase"]
         CLI2["CLI<br/>deploy-airdrop"]
-        Contract["Solana Contract<br/>(on-chain)"]
-        JSON --> CLI2 --> Contract
+        JSON --> CLI2
     end
 
     subgraph Runtime["Runtime Phase"]
         Server["Server<br/>(proofs API)"]
         WebApp["Web App<br/>(claim UI)"]
+        CLI3["CLI<br/>claim-airdrop"]
         JSON --> Server
         Server --> WebApp
-        WebApp --> Contract
     end
+
+    Contract["Solana Contract<br/>(on-chain)"]
+
+    CLI2 --> Contract
+    WebApp --> Contract
+    CLI3 --> Contract
 ```
 
 ## Components
