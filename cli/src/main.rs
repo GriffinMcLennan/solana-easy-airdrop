@@ -28,15 +28,11 @@ enum Commands {
         #[arg(long, value_name = "FILE")]
         json: PathBuf,
 
-        /// Token mint address for the airdrop
+        /// Token mint address for the airdrop (optional - creates new mint if not provided)
         #[arg(long)]
-        mint: String,
+        mint: Option<String>,
 
-        /// Total amount of tokens to transfer to the airdrop vault
-        #[arg(long)]
-        amount: u64,
-
-        /// Network to deploy to (devnet, testnet, mainnet)
+        /// Network to deploy to (devnet, testnet, mainnet, localnet)
         #[arg(long, default_value = "devnet")]
         network: String,
 
@@ -59,7 +55,6 @@ fn main() -> Result<()> {
         Commands::DeployAirdrop {
             json,
             mint,
-            amount,
             network,
             program_id,
             keypair,
@@ -71,7 +66,6 @@ fn main() -> Result<()> {
             deploy_airdrop(DeployAirdropArgs {
                 json_path: json,
                 mint,
-                amount,
                 network,
                 program_id,
                 keypair_path,
