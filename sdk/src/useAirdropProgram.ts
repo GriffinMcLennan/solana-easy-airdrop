@@ -2,7 +2,7 @@ import { useContext } from "react";
 import {
   AirdropProgramContext,
   type AirdropProgramContextType,
-} from "../contexts/AirdropProgramContext";
+} from "./AirdropProgramContext";
 
 export const useAirdropProgram = (): AirdropProgramContextType => {
   const context = useContext(AirdropProgramContext);

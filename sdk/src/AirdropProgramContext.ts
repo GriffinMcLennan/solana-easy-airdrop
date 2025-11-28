@@ -1,6 +1,6 @@
 import { createContext } from "react";
 import type { Program } from "@coral-xyz/anchor";
-import type { AirdropContract } from "../providers/AirdropContractTypes";
+import type { AirdropContract } from "./types";
 
 export interface AirdropProgramContextType {
   program: Program<AirdropContract> | null;

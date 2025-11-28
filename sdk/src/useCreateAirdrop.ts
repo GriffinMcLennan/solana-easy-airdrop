@@ -22,7 +22,7 @@ import {
   TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
 import { type Program, BN } from "@coral-xyz/anchor";
-import type { AirdropContract } from "../providers/AirdropContractTypes";
+import type { AirdropContract } from "./types";
 
 const MINT_DECIMALS = 6;
 const TEN_THOUSAND_TOKENS = 10_000 * 10 ** MINT_DECIMALS;
@@ -99,9 +99,10 @@ async function createMintAndFundCreator(
   transaction.partialSign(mint);
   const signedTx = await wallet.signTransaction(transaction);
   const signature = await connection.sendRawTransaction(signedTx.serialize());
-  console.log("SIGNATURE:", signature);
 
   await connection.confirmTransaction(signature);
+
+  return { signature, mint: mint.publicKey };
 }
 
 export function useCreateAirdrop() {
@@ -115,7 +116,7 @@ export function useCreateAirdrop() {
         throw new Error("Program or wallet not initialized");
       }
 
-      await createMintAndFundCreator(
+      return await createMintAndFundCreator(
         connection,
         wallet,
         program,

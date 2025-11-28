@@ -1,0 +1,12 @@
+{
+  "name": "solana-easy-airdrop",
+  "private": true,
+  "scripts": {
+    "build": "pnpm -r build",
+    "dev": "pnpm -r --parallel dev",
+    "test": "pnpm -r test"
+  },
+  "devDependencies": {
+    "typescript": "~5.8.3"
+  }
+}

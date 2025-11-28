@@ -1,19 +1,21 @@
 import "./App.css";
-import { useCreateAirdrop } from "./hooks/useCreateAirdrop";
-import { useClaimAirdrop } from "./hooks/useClaimAirdrop";
+import {
+  useCreateAirdrop,
+  useClaimAirdrop,
+} from "@solana-easy-airdrop/react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { useState } from "react";
 import { MerkleRootInput } from "./components/MerkleRootInput";
 
+const AIRDROP_SERVER_URL =
+  import.meta.env.VITE_AIRDROP_SERVER_URL || "http://localhost:5000";
+
 function App() {
   const createAirdrop = useCreateAirdrop();
-  const claimAirdrop = useClaimAirdrop();
+  const claimAirdrop = useClaimAirdrop({ serverUrl: AIRDROP_SERVER_URL });
 
   const [merkleRootInput, setMerkleRootInput] = useState("");
-  const [merkleRoot, setMerkleRoot] = useState([
-    53, 9, 147, 191, 167, 219, 140, 104, 245, 10, 37, 110, 101, 7, 193, 153, 60,
-    13, 140, 44, 99, 201, 137, 46, 16, 237, 225, 14, 83, 49, 64, 158,
-  ]);
+  const [merkleRoot, setMerkleRoot] = useState<number[]>([]);
   const [airdropAmount, setAirdropAmount] = useState("");
 
   return (
@@ -45,6 +47,7 @@ function App() {
           <button
             className="action-button"
             onClick={() => createAirdrop(merkleRoot, Number(airdropAmount))}
+            disabled={merkleRoot.length !== 32}
           >
             Create Airdrop
           </button>
@@ -55,6 +58,7 @@ function App() {
           <button
             className="action-button"
             onClick={() => claimAirdrop(merkleRoot)}
+            disabled={merkleRoot.length !== 32}
           >
             Claim Airdrop
           </button>

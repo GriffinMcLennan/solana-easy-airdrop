@@ -17,11 +17,17 @@ interface ClaimResponse {
   proof: Proof;
 }
 
-async function getUserClaimAndProof(rootHex: string, address: string) {
+export interface UseClaimAirdropOptions {
+  serverUrl: string;
+}
+
+async function getUserClaimAndProof(
+  serverUrl: string,
+  rootHex: string,
+  address: string
+) {
   const response = await fetch(
-    `${
-      import.meta.env.VITE_AIRDROP_SERVER_URL
-    }/api/airdrop/${rootHex}/${address}`
+    `${serverUrl}/api/airdrop/${rootHex}/${address}`
   );
 
   if (!response.ok) {
@@ -32,7 +38,8 @@ async function getUserClaimAndProof(rootHex: string, address: string) {
   return data;
 }
 
-export function useClaimAirdrop() {
+export function useClaimAirdrop(options: UseClaimAirdropOptions) {
+  const { serverUrl } = options;
   const { program } = useAirdropProgram();
   const wallet = useAnchorWallet();
   const { connection } = useConnection();
@@ -55,9 +62,16 @@ export function useClaimAirdrop() {
         throw new Error("Wallet address not available");
       }
 
-      const { claim, proof } = await getUserClaimAndProof(rootHex, address);
+      const { claim, proof } = await getUserClaimAndProof(
+        serverUrl,
+        rootHex,
+        address
+      );
       const merkleRoot = PublicKey.findProgramAddressSync(
-        [Buffer.from("merkle_root"), Buffer.from(merkleRootHash)],
+        [
+          new TextEncoder().encode("merkle_root"),
+          new Uint8Array(merkleRootHash),
+        ],
         program.programId
       )[0];
 
@@ -85,11 +99,12 @@ export function useClaimAirdrop() {
       const signature = await connection.sendRawTransaction(
         signedTx.serialize()
       );
-      console.log("SIGNATURE:", signature);
 
       await connection.confirmTransaction(signature);
+
+      return { signature, amount: claim.amount };
     },
-    [program, wallet, connection]
+    [program, wallet, connection, serverUrl]
   );
 
   return claimAirdrop;

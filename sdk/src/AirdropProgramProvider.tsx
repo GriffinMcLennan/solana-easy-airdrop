@@ -2,11 +2,11 @@ import React, { useMemo, type ReactNode } from "react";
 import { Program, AnchorProvider, type Idl } from "@coral-xyz/anchor";
 import { useAnchorWallet, useConnection } from "@solana/wallet-adapter-react";
 import idl from "./idl.json";
-import type { AirdropContract } from "./AirdropContractTypes";
+import type { AirdropContract } from "./types";
 import {
   AirdropProgramContext,
   type AirdropProgramContextType,
-} from "../contexts/AirdropProgramContext";
+} from "./AirdropProgramContext";
 
 interface AirdropProgramProviderProps {
   children: ReactNode;
