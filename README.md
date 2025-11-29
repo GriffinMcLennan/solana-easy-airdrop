@@ -253,6 +253,24 @@ cargo run -- deploy-airdrop --json <JSON_FILE> [OPTIONS]
 | `--program-id <ID>` | Airdrop program ID | From Anchor.toml |
 | `--keypair <PATH>` | Keypair file path | ~/.config/solana/id.json |
 
+### `claim-airdrop`
+
+Claim tokens from an airdrop.
+
+```bash
+cargo run -- claim-airdrop --json <JSON_FILE> [OPTIONS]
+```
+
+**Options:**
+| Option | Description | Default |
+|--------|-------------|---------|
+| `--json <FILE>` | Path to airdrop.json (required) | - |
+| `--mint <ADDRESS>` | Token mint address | Reads from airdrop.json |
+| `--address <ADDRESS>` | Address to claim for | Keypair's address |
+| `--network <NETWORK>` | Network: localnet, devnet, testnet, mainnet | devnet |
+| `--program-id <ID>` | Airdrop program ID | From Anchor.toml |
+| `--keypair <PATH>` | Keypair file path | ~/.config/solana/id.json |
+
 ## Usage
 
 ### Claiming an Airdrop (Web App)
@@ -321,7 +339,8 @@ solana-easy-airdrop/
 │       ├── main.rs
 │       └── instructions/
 │           ├── create_airdrop.rs   # Merkle tree generation
-│           └── deploy_airdrop.rs   # On-chain deployment
+│           ├── deploy_airdrop.rs   # On-chain deployment
+│           └── claim_airdrop.rs    # Token claiming
 ├── airdrop-contract/
 │   ├── Cargo.toml           # Anchor workspace
 │   ├── rust-toolchain.toml  # Rust 1.79.0 for BPF
@@ -339,9 +358,12 @@ solana-easy-airdrop/
 ├── sdk/
 │   └── src/
 │       ├── index.ts
+│       ├── AirdropProgramProvider.tsx
+│       ├── AirdropProgramContext.ts
 │       ├── useAirdropProgram.ts
 │       ├── useCreateAirdrop.ts
-│       └── useClaimAirdrop.ts
+│       ├── useClaimAirdrop.ts
+│       └── types.ts
 └── web/
     └── src/
         └── App.tsx
