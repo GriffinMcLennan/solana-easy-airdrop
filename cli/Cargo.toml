@@ -23,3 +23,7 @@ spl-associated-token-account = "6"
 
 # Local contract dependency for CPI types
 airdrop-contract = { path = "../airdrop-contract/programs/airdrop-contract", features = ["cpi"] }
+
+[dev-dependencies]
+tempfile = "3"
+serial_test = "3"

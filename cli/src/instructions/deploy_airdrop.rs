@@ -142,8 +142,11 @@ pub fn deploy_airdrop(args: DeployAirdropArgs) -> Result<()> {
 
     println!("Payer: {}", payer.pubkey());
 
-    // Create RPC client for direct operations
-    let rpc_client = RpcClient::new(args.network.rpc_url().to_string());
+    // Create RPC client for direct operations (use confirmed commitment for faster tx confirmation)
+    let rpc_client = RpcClient::new_with_commitment(
+        args.network.rpc_url().to_string(),
+        CommitmentConfig::confirmed(),
+    );
 
     // Determine mint - either use provided or create new one
     let (mint_pubkey, mint_keypair) = match &args.mint {
