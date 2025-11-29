@@ -442,19 +442,21 @@ We store the **full merkle tree** in `airdrop.json` rather than pre-computed pro
 
 | Approach | Storage | Formula |
 |----------|---------|---------|
-| Full tree | O(n) | `2n × 32 bytes` |
-| Pre-computed proofs | O(n log n) | `n × log₂(n) × 32 bytes` |
+| Full tree | O(n) | `2n` hashes |
+| Pre-computed proofs | O(n log n) | `n × log₂(n)` hashes |
 
 The full tree is more efficient both asymptotically and in practice:
 
-**Real-world comparison (32 bytes per hash):**
+**Real-world comparison:**
+
+Hashes are stored as 64-character hex strings in JSON (more compact than JSON byte arrays, and human-readable for debugging). With JSON overhead, each hash uses ~70 bytes on disk.
 
 | Recipients | Full Tree | Pre-computed Proofs | Winner |
 |------------|-----------|---------------------|--------|
-| 1,000 | 64 KB | 320 KB | Tree (5x smaller) |
-| 10,000 | 640 KB | 4.2 MB | Tree (6.5x smaller) |
-| 100,000 | 6.4 MB | 53 MB | Tree (8x smaller) |
-| 1,000,000 | 64 MB | 640 MB | Tree (10x smaller) |
+| 1,000 | ~140 KB | ~700 KB | Tree (5x smaller) |
+| 10,000 | ~1.4 MB | ~9 MB | Tree (6.5x smaller) |
+| 100,000 | ~14 MB | ~115 MB | Tree (8x smaller) |
+| 1,000,000 | ~140 MB | ~1.4 GB | Tree (10x smaller) |
 
 The full tree approach also enables **on-demand proof generation**—proofs are computed only when requested, reducing server memory usage and allowing efficient streaming from disk.
 
