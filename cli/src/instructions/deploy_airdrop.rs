@@ -30,8 +30,8 @@ struct ClaimInfo {
 
 #[derive(Deserialize, Serialize)]
 struct AirdropJson {
-    merkle_root: [u8; 32],
-    merkle_tree: Vec<Vec<u8>>,
+    merkle_root: String,
+    merkle_tree: Vec<String>,
     claims: std::collections::BTreeMap<String, ClaimInfo>,
     #[serde(default)]
     mint: Option<String>,
@@ -128,10 +128,13 @@ pub fn deploy_airdrop(args: DeployAirdropArgs) -> Result<()> {
         .map(|claim| claim.amount.parse::<u64>().unwrap_or(0))
         .sum();
 
-    let merkle_root_hash = airdrop_data.merkle_root;
+    let merkle_root_hash: [u8; 32] = hex::decode(&airdrop_data.merkle_root)
+        .with_context(|| "Invalid hex in merkle_root")?
+        .try_into()
+        .map_err(|_| anyhow::anyhow!("merkle_root must be 32 bytes"))?;
     let program_id = Pubkey::from_str(&args.program_id)?;
 
-    println!("Merkle root: {}", hex::encode(merkle_root_hash));
+    println!("Merkle root: {}", airdrop_data.merkle_root);
     println!("Network: {}", args.network.name());
     println!("Program ID: {}", program_id);
     println!("Total amount (from claims): {}", total_amount);

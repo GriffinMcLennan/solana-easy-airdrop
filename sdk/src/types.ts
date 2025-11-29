@@ -4,7 +4,7 @@ export interface ClaimEntry {
   leaf_index: number;
 }
 
-export type Proof = number[][];
+export type Proof = string[];
 
 export interface ClaimResponse {
   claim: ClaimEntry;

@@ -12,8 +12,8 @@ struct ClaimEntry {
 
 #[derive(Serialize)]
 struct AirdropData {
-    merkle_root: [u8; 32],
-    merkle_tree: Vec<[u8; 32]>,
+    merkle_root: String,
+    merkle_tree: Vec<String>,
     claims: BTreeMap<String, ClaimEntry>,
     mint: Option<String>,
 }
@@ -134,9 +134,9 @@ fn write_airdrop_json(
     }
 
     let data = AirdropData {
-        merkle_root,
+        merkle_root: hex::encode(merkle_root),
         claims,
-        merkle_tree: tree.to_vec(),
+        merkle_tree: tree.iter().map(|h| hex::encode(h)).collect(),
         mint: None,
     };
     serde_json::to_writer_pretty(file, &data).with_context(|| "Failed to write Airdrop JSON")?;

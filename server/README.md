@@ -32,10 +32,10 @@ Returns claim data and merkle proof for an address.
 {
   "claim": {
     "amount": "100",
-    "leaf_index": 0
+    "leaf_index": 8
   },
-  "proof": [[...], [...]]
+  "proof": ["acb7f3218628fe68...", "55e3d16cf5ad4331..."]
 }
 ```
 
-Each proof element is a 32-byte array.
+Each proof element is a 64-character hex string (32 bytes).

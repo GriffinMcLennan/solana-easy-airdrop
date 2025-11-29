@@ -123,9 +123,22 @@ cargo run -- create-airdrop --input ./airdrop.csv
 ```
 
 This creates `airdrop.json` containing:
-- `merkle_root`: The 32-byte root hash
-- `merkle_tree`: Full tree for proof generation
+- `merkle_root`: The 32-byte root hash (as 64-char hex string)
+- `merkle_tree`: Full tree for proof generation (array of hex strings)
 - `claims`: Mapping of addresses to amounts and leaf indices
+
+Example output:
+```json
+{
+  "merkle_root": "88ee7ea2477c74b54593c5ca51d64c7b1a32b359...",
+  "merkle_tree": ["0000000000...", "88ee7ea247...", ...],
+  "claims": {
+    "FEHVBLQa7gYKdVT3jc2NQviSs5EgzTyD3k2yyPm5pTXP": {
+      "amount": "100",
+      "leaf_index": 8
+    }
+  }
+}
 
 ### 2. Deploy the Contract
 

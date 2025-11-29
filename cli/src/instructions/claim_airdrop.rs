@@ -21,8 +21,8 @@ struct ClaimInfo {
 
 #[derive(Deserialize)]
 struct AirdropJson {
-    merkle_root: [u8; 32],
-    merkle_tree: Vec<Vec<u8>>,
+    merkle_root: String,
+    merkle_tree: Vec<String>,
     claims: std::collections::BTreeMap<String, ClaimInfo>,
     #[serde(default)]
     mint: Option<String>,
@@ -39,22 +39,24 @@ pub struct ClaimAirdropArgs {
 }
 
 /// Generate a merkle proof for the given leaf index
-fn generate_proof(merkle_tree: &[Vec<u8>], leaf_index: u64) -> Vec<[u8; 32]> {
+fn generate_proof(merkle_tree: &[String], leaf_index: u64) -> Result<Vec<[u8; 32]>> {
     let mut proof: Vec<[u8; 32]> = Vec::new();
     let mut index = leaf_index as usize;
 
     while index > 1 {
         let sibling_index = if index % 2 == 0 { index + 1 } else { index - 1 };
         if sibling_index < merkle_tree.len() {
-            let sibling = &merkle_tree[sibling_index];
-            let mut arr = [0u8; 32];
-            arr.copy_from_slice(sibling);
+            let sibling_bytes = hex::decode(&merkle_tree[sibling_index])
+                .with_context(|| format!("Invalid hex at merkle_tree[{}]", sibling_index))?;
+            let arr: [u8; 32] = sibling_bytes
+                .try_into()
+                .map_err(|_| anyhow::anyhow!("merkle_tree[{}] must be 32 bytes", sibling_index))?;
             proof.push(arr);
         }
         index /= 2;
     }
 
-    proof
+    Ok(proof)
 }
 
 pub fn claim_airdrop(args: ClaimAirdropArgs) -> Result<()> {
@@ -68,7 +70,10 @@ pub fn claim_airdrop(args: ClaimAirdropArgs) -> Result<()> {
         )
     })?;
 
-    let merkle_root_hash = airdrop_data.merkle_root;
+    let merkle_root_hash: [u8; 32] = hex::decode(&airdrop_data.merkle_root)
+        .with_context(|| "Invalid hex in merkle_root")?
+        .try_into()
+        .map_err(|_| anyhow::anyhow!("merkle_root must be 32 bytes"))?;
     let program_id = Pubkey::from_str(&args.program_id)?;
 
     // Determine mint - either from args or from JSON
@@ -95,7 +100,7 @@ pub fn claim_airdrop(args: ClaimAirdropArgs) -> Result<()> {
         None => payer.pubkey(),
     };
 
-    println!("Merkle root: {}", hex::encode(merkle_root_hash));
+    println!("Merkle root: {}", airdrop_data.merkle_root);
     println!("Network: {}", args.network.name());
     println!("Program ID: {}", program_id);
     println!("Mint: {}", mint);
@@ -128,7 +133,7 @@ pub fn claim_airdrop(args: ClaimAirdropArgs) -> Result<()> {
     println!("Leaf index: {}", leaf_index);
 
     // Generate the proof
-    let proof = generate_proof(&airdrop_data.merkle_tree, leaf_index);
+    let proof = generate_proof(&airdrop_data.merkle_tree, leaf_index)?;
     println!("Proof length: {} nodes", proof.len());
 
     // Create Anchor client

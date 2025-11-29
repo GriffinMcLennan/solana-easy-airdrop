@@ -7,12 +7,12 @@ interface ClaimEntry {
 }
 
 interface AirdropRaw {
-    merkle_root: number[];
-    merkle_tree: number[][];
+    merkle_root: string;
+    merkle_tree: string[];
     claims: Record<string, ClaimEntry>;
 }
 
-type AirdropsData = Record<string, { claims: Record<string, ClaimEntry>; merkleTree: number[][] }>;
+type AirdropsData = Record<string, { claims: Record<string, ClaimEntry>; merkleTree: string[] }>;
 
 export class AirdropController {
     private airdrops: AirdropsData;
@@ -26,8 +26,8 @@ export class AirdropController {
             const raw = fs.readFileSync(path.join(dir, fn), "utf-8");
             const data = JSON.parse(raw) as AirdropRaw;
 
-            // turn the byte-array merkle_root into a hex string for use as a key
-            const rootHex = Buffer.from(data.merkle_root).toString("hex");
+            // merkle_root is already a hex string, use it directly as a key
+            const rootHex = data.merkle_root;
 
             this.airdrops[rootHex] = {
                 claims: data.claims,
@@ -51,20 +51,19 @@ export class AirdropController {
         return claim;
     }
 
-    public generateProof(rootHex: string, leafIndex: number): number[][] {
+    public generateProof(rootHex: string, leafIndex: number): string[] {
         const airdrop = this.airdrops[rootHex];
         if (!airdrop) {
             throw new Error(`Airdrop with merkle root ${rootHex} not found`);
         }
 
         const tree = airdrop.merkleTree;
-        const proof: number[][] = [];
+        const proof: string[] = [];
         let index = leafIndex;
 
         while (index > 1) {
             const siblingIndex = index % 2 === 0 ? index + 1 : index - 1;
-            const sibling = tree[siblingIndex] as number[];
-            proof.push(sibling);
+            proof.push(tree[siblingIndex]);
             index = Math.floor(index / 2);
         }
 

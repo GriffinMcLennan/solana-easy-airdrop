@@ -59,9 +59,9 @@ fn test_create_airdrop_generates_valid_json() {
     // Parse and validate JSON
     let json = ctx.read_airdrop_json().expect("Failed to read airdrop JSON");
 
-    // Check merkle_root exists and is 32 bytes
-    let merkle_root = json["merkle_root"].as_array().expect("merkle_root missing");
-    assert_eq!(merkle_root.len(), 32, "merkle_root should be 32 bytes");
+    // Check merkle_root exists and is a 64-character hex string (32 bytes)
+    let merkle_root = json["merkle_root"].as_str().expect("merkle_root missing");
+    assert_eq!(merkle_root.len(), 64, "merkle_root should be 64 hex chars (32 bytes)");
 
     // Check claims exist for all addresses
     let claims = json["claims"].as_object().expect("claims missing");

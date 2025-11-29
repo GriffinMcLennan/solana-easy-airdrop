@@ -34,6 +34,15 @@ export function useClaimAirdrop(options: UseClaimAirdropOptions) {
     return arr.map((byte) => byte.toString(16).padStart(2, "0")).join("");
   };
 
+  // Helper function to convert hex string to byte array
+  const hexToBytes = (hex: string): number[] => {
+    const bytes: number[] = [];
+    for (let i = 0; i < hex.length; i += 2) {
+      bytes.push(parseInt(hex.substring(i, i + 2), 16));
+    }
+    return bytes;
+  };
+
   const claimAirdrop = useCallback(
     async (merkleRootHash: number[]) => {
       if (!program || !wallet) {
@@ -63,8 +72,11 @@ export function useClaimAirdrop(options: UseClaimAirdropOptions) {
       const merkleRootData = await program.account.merkleRoot.fetch(merkleRoot);
       const mint = merkleRootData.mint;
 
+      // Convert hex string proofs to byte arrays for Anchor
+      const proofBytes = proof.map(hexToBytes);
+
       const claimIx = await program.methods
-        .claim(proof, new BN(claim.amount), claim.leaf_index)
+        .claim(proofBytes, new BN(claim.amount), claim.leaf_index)
         .accounts({
           merkleRoot,
           mint,
