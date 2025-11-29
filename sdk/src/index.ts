@@ -13,7 +13,13 @@ export {
 // Hooks
 export { useAirdropProgram } from "./useAirdropProgram";
 export { useCreateAirdrop } from "./useCreateAirdrop";
-export { useClaimAirdrop, type UseClaimAirdropOptions } from "./useClaimAirdrop";
+export { useClaimAirdrop } from "./useClaimAirdrop";
 
 // Types
-export type { AirdropContract } from "./types";
+export type {
+  AirdropContract,
+  ClaimEntry,
+  ClaimResponse,
+  Proof,
+  UseClaimAirdropOptions,
+} from "./types";

@@ -4,22 +4,7 @@ import { useAnchorWallet, useConnection } from "@solana/wallet-adapter-react";
 import { useCallback } from "react";
 import { PublicKey, Transaction } from "@solana/web3.js";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
-
-interface ClaimEntry {
-  amount: string;
-  leaf_index: number;
-}
-
-type Proof = number[][];
-
-interface ClaimResponse {
-  claim: ClaimEntry;
-  proof: Proof;
-}
-
-export interface UseClaimAirdropOptions {
-  serverUrl: string;
-}
+import type { ClaimResponse, UseClaimAirdropOptions } from "./types";
 
 async function getUserClaimAndProof(
   serverUrl: string,

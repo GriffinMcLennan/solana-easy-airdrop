@@ -1,3 +1,20 @@
+// API response types for server communication
+export interface ClaimEntry {
+  amount: string;
+  leaf_index: number;
+}
+
+export type Proof = number[][];
+
+export interface ClaimResponse {
+  claim: ClaimEntry;
+  proof: Proof;
+}
+
+export interface UseClaimAirdropOptions {
+  serverUrl: string;
+}
+
 /**
  * Program IDL in camelCase format in order to be used in JS/TS.
  *
