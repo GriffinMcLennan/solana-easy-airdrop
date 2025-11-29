@@ -349,6 +349,19 @@ cd airdrop-contract
 anchor test
 ```
 
+SDK tests (requires solana-test-validator):
+```bash
+cd sdk
+pnpm test              # Run all tests
+pnpm test:unit         # Unit tests only
+pnpm test:integration  # Integration tests only
+```
+
+**Prerequisites for SDK integration tests:**
+- Build the CLI: `cargo build -p cli`
+- Build the contract: `cd airdrop-contract && anchor build`
+- The test runner auto-starts solana-test-validator if not running
+
 ### Project Structure
 
 ```
@@ -379,13 +392,22 @@ solana-easy-airdrop/
 │   ├── airdrop.ts           # Proof generation
 │   └── airdrop_jsons/       # Store airdrop JSON files
 ├── sdk/
+│   ├── __tests__/               # Vitest tests
+│   │   ├── setup/               # Test setup (validator management)
+│   │   ├── fixtures/            # Test helpers (context, CLI helpers)
+│   │   ├── unit/                # Unit tests
+│   │   └── integration/         # Integration tests
 │   └── src/
 │       ├── index.ts
+│       ├── core/                # Pure functions (non-React)
+│       │   ├── createAirdrop.ts
+│       │   ├── claimAirdrop.ts
+│       │   └── utils.ts
 │       ├── AirdropProgramProvider.tsx
 │       ├── AirdropProgramContext.ts
 │       ├── useAirdropProgram.ts
-│       ├── useCreateAirdrop.ts
-│       ├── useClaimAirdrop.ts
+│       ├── useCreateAirdrop.ts  # Thin wrapper around core
+│       ├── useClaimAirdrop.ts   # Thin wrapper around core
 │       └── types.ts
 └── web/
     └── src/

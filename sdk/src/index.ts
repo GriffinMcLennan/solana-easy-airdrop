@@ -23,3 +23,17 @@ export type {
   Proof,
   UseClaimAirdropOptions,
 } from "./types";
+
+// Core functions (for non-React usage)
+export {
+  createAirdrop,
+  claimAirdrop,
+  fetchClaimData,
+  numberArrayToHex,
+  hexToBytes,
+  type CreateAirdropParams,
+  type CreateAirdropResult,
+  type ClaimAirdropParams,
+  type ClaimAirdropResult,
+  type Signer,
+} from "./core";
