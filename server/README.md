@@ -1,15 +1,41 @@
-# server
+# Server
 
-To install dependencies:
+Express server that serves merkle proofs to airdrop claimants.
+
+## Setup
 
 ```bash
 bun install
 ```
 
-To run:
-
+Copy airdrop JSON files to `airdrop_jsons/` directory:
 ```bash
-bun run index.ts
+cp ../airdrop.json airdrop_jsons/
 ```
 
-This project was created using `bun init` in bun v1.2.19. [Bun](https://bun.com) is a fast all-in-one JavaScript runtime.
+## Running
+
+```bash
+bun run start
+```
+
+Runs on http://localhost:5000.
+
+## API
+
+### `GET /api/airdrop/:rootHex/:address`
+
+Returns claim data and merkle proof for an address.
+
+**Response:**
+```json
+{
+  "claim": {
+    "amount": "100",
+    "leaf_index": 0
+  },
+  "proof": [[...], [...]]
+}
+```
+
+Each proof element is a 32-byte array.
