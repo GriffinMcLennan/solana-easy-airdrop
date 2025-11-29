@@ -1,10 +1,13 @@
 import { spawn } from "child_process";
-import { existsSync } from "fs";
+import { existsSync, writeFileSync } from "fs";
 import { tmpdir } from "os";
 import { join, resolve } from "path";
 
 const PROGRAM_ID = "F6fHBUyYyaW14CxjSnJjLck8vMmWew3PbCnt5TMqRdZX";
 const RPC_URL = "http://localhost:8899";
+
+// File to persist PID between globalSetup and globalTeardown (they run in separate processes)
+export const VALIDATOR_PID_FILE = join(tmpdir(), "solana-test-validator.pid");
 
 async function isValidatorRunning(): Promise<boolean> {
   try {
@@ -50,6 +53,8 @@ export async function setup() {
   // Check if validator is already running
   if (await isValidatorRunning()) {
     console.log("Validator already running, reusing...");
+    // Clear PID file since we didn't start this validator
+    writeFileSync(VALIDATOR_PID_FILE, "");
     return;
   }
 
@@ -72,9 +77,12 @@ export async function setup() {
     { stdio: "ignore", detached: true }
   );
 
-  // Store PID for teardown
-  (globalThis as any).__VALIDATOR_PID__ = validatorProcess.pid;
-  (globalThis as any).__VALIDATOR_LEDGER__ = ledgerDir;
+  // Persist PID and ledger dir to file for teardown (globalThis doesn't persist between processes)
+  const pidData = JSON.stringify({
+    pid: validatorProcess.pid,
+    ledgerDir,
+  });
+  writeFileSync(VALIDATOR_PID_FILE, pidData);
 
   // Don't wait for the parent process
   validatorProcess.unref();

@@ -131,7 +131,7 @@ Example output:
 ```json
 {
   "merkle_root": "88ee7ea2477c74b54593c5ca51d64c7b1a32b359...",
-  "merkle_tree": ["0000000000...", "88ee7ea247...", ...],
+  "merkle_tree": ["0000000000...", "88ee7ea247...", "..."],
   "claims": {
     "FEHVBLQa7gYKdVT3jc2NQviSs5EgzTyD3k2yyPm5pTXP": {
       "amount": "100",
@@ -139,6 +139,7 @@ Example output:
     }
   }
 }
+```
 
 ### 2. Deploy the Contract
 

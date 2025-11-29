@@ -1,8 +1,24 @@
-import { rmSync } from "fs";
+import { existsSync, readFileSync, rmSync, unlinkSync } from "fs";
+import { VALIDATOR_PID_FILE } from "./globalSetup";
 
 export async function teardown() {
-  const pid = (globalThis as any).__VALIDATOR_PID__;
-  const ledgerDir = (globalThis as any).__VALIDATOR_LEDGER__;
+  let pid: number | undefined;
+  let ledgerDir: string | undefined;
+
+  // Read PID from file (globalThis doesn't persist between setup and teardown processes)
+  if (existsSync(VALIDATOR_PID_FILE)) {
+    try {
+      const content = readFileSync(VALIDATOR_PID_FILE, "utf-8").trim();
+      if (content) {
+        const data = JSON.parse(content);
+        pid = data.pid;
+        ledgerDir = data.ledgerDir;
+      }
+      unlinkSync(VALIDATOR_PID_FILE);
+    } catch (e) {
+      // File may be empty or malformed
+    }
+  }
 
   if (pid) {
     try {

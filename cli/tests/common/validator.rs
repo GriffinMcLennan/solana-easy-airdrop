@@ -4,8 +4,6 @@ use std::thread;
 use std::time::{Duration, Instant};
 use tempfile::TempDir;
 
-// Note: Child and TempDir are used in SharedValidator struct
-
 pub const PROGRAM_ID: &str = "F6fHBUyYyaW14CxjSnJjLck8vMmWew3PbCnt5TMqRdZX";
 pub const RPC_URL: &str = "http://localhost:8899";
 
@@ -13,8 +11,19 @@ pub const RPC_URL: &str = "http://localhost:8899";
 static SHARED_VALIDATOR: OnceLock<SharedValidator> = OnceLock::new();
 
 struct SharedValidator {
-    _process: Child,
+    process: Child,
     _ledger_dir: TempDir,
+}
+
+impl Drop for SharedValidator {
+    fn drop(&mut self) {
+        // Kill the validator process on cleanup
+        if let Err(e) = self.process.kill() {
+            eprintln!("Failed to kill validator process: {}", e);
+        }
+        // Wait for it to exit to avoid zombie processes
+        let _ = self.process.wait();
+    }
 }
 
 /// Get or start the shared validator instance
@@ -53,7 +62,7 @@ pub fn get_shared_validator() -> Result<(), Box<dyn std::error::Error>> {
         }
 
         SharedValidator {
-            _process: process,
+            process,
             _ledger_dir: ledger_dir,
         }
     });
