@@ -6,6 +6,7 @@ use tempfile::TempDir;
 
 /// Test context containing temporary directories and keypair paths
 pub struct TestContext {
+    #[allow(dead_code)] // Kept to ensure TempDir lives as long as the context
     pub temp_dir: TempDir,
     pub authority_keypair_path: PathBuf,
     pub claimant_keypair_paths: Vec<PathBuf>,
