@@ -4,6 +4,8 @@ use std::thread;
 use std::time::{Duration, Instant};
 use tempfile::TempDir;
 
+// Note: Child and TempDir are used in SharedValidator struct
+
 pub const PROGRAM_ID: &str = "F6fHBUyYyaW14CxjSnJjLck8vMmWew3PbCnt5TMqRdZX";
 pub const RPC_URL: &str = "http://localhost:8899";
 
@@ -70,123 +72,25 @@ fn get_program_so_path() -> String {
     )
 }
 
-/// Manages a solana-test-validator process for integration testing
-pub struct TestValidator {
-    process: Child,
-    #[allow(dead_code)]
-    ledger_dir: TempDir,
-}
-
-impl TestValidator {
-    /// Start a new test validator with the airdrop program preloaded
-    pub fn start() -> Result<Self, Box<dyn std::error::Error>> {
-        let ledger_dir = TempDir::new()?;
-        let so_path = get_program_so_path();
-
-        // Check if .so file exists
-        if !std::path::Path::new(&so_path).exists() {
-            return Err(format!(
-                "Program .so file not found at: {}\nRun 'anchor build' in airdrop-contract/ first",
-                so_path
-            )
-            .into());
-        }
-
-        let process = Command::new("solana-test-validator")
-            .arg("--bpf-program")
-            .arg(PROGRAM_ID)
-            .arg(&so_path)
-            .arg("--ledger")
-            .arg(ledger_dir.path())
-            .arg("--reset")
-            .arg("--quiet")
-            .stdout(Stdio::null())
-            .stderr(Stdio::null())
-            .spawn()?;
-
-        let validator = Self { process, ledger_dir };
-
-        // Wait for validator to be ready
-        validator.wait_for_ready(Duration::from_secs(30))?;
-
-        Ok(validator)
-    }
-
-    /// Wait for the validator RPC to be ready
-    fn wait_for_ready(&self, timeout: Duration) -> Result<(), Box<dyn std::error::Error>> {
-        let start = Instant::now();
-
-        while start.elapsed() < timeout {
-            // Try to connect to RPC
-            let result = std::process::Command::new("solana")
-                .args(["cluster-version", "-u", RPC_URL])
-                .stdout(Stdio::null())
-                .stderr(Stdio::null())
-                .status();
-
-            if let Ok(status) = result {
-                if status.success() {
-                    return Ok(());
-                }
-            }
-
-            thread::sleep(Duration::from_millis(500));
-        }
-
-        Err(format!("Validator did not become ready within {:?}", timeout).into())
-    }
-
-    pub fn rpc_url(&self) -> &'static str {
-        RPC_URL
-    }
-}
-
-impl Drop for TestValidator {
-    fn drop(&mut self) {
-        let _ = self.process.kill();
-        let _ = self.process.wait();
-    }
-}
-
 /// Fund an account with SOL using solana airdrop command
 pub fn fund_account(address: &str, amount_sol: u64) -> Result<(), Box<dyn std::error::Error>> {
-    // Retry logic for airdrops which can be flaky on test validators
-    let mut attempts = 0;
-    let max_attempts = 5;
+    let output = Command::new("solana")
+        .args(["airdrop", &amount_sol.to_string(), address, "-u", RPC_URL])
+        .output()?;
 
-    while attempts < max_attempts {
-        let output = Command::new("solana")
-            .args(["airdrop", &amount_sol.to_string(), address, "-u", RPC_URL])
-            .output()?;
-
-        if output.status.success() {
-            // Wait for transaction to be confirmed
-            thread::sleep(Duration::from_secs(1));
-
-            // Verify the account has balance
-            let balance_output = Command::new("solana")
-                .args(["balance", address, "-u", RPC_URL])
-                .output()?;
-
-            let balance_str = String::from_utf8_lossy(&balance_output.stdout);
-            if balance_output.status.success() && !balance_str.trim().starts_with("0 SOL") {
-                // Extra delay to ensure the airdrop is fully confirmed
-                thread::sleep(Duration::from_secs(2));
-                return Ok(());
-            }
-        }
-
-        attempts += 1;
-        if attempts < max_attempts {
-            thread::sleep(Duration::from_secs(2));
-        }
+    if !output.status.success() {
+        return Err(format!(
+            "Failed to airdrop {} SOL to {}: {}",
+            amount_sol,
+            address,
+            String::from_utf8_lossy(&output.stderr)
+        )
+        .into());
     }
 
-    Err(format!(
-        "Failed to airdrop {} SOL to {} after {} attempts",
-        amount_sol, address, max_attempts
-    )
-    .into())
+    // Brief wait for confirmation on test validator
+    thread::sleep(Duration::from_millis(500));
+    Ok(())
 }
 
 /// Verify a program is loaded on the validator

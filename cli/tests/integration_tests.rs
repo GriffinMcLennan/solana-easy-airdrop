@@ -9,12 +9,10 @@
 mod common;
 
 use common::{
-    cli_binary_path, fund_account, run_cli, run_cli_success, verify_program_loaded, TestContext,
-    TestValidator, PROGRAM_ID,
+    cli_binary_path, fund_account, get_shared_validator, run_cli, run_cli_success,
+    verify_program_loaded, TestContext, PROGRAM_ID,
 };
 use serial_test::serial;
-use std::thread;
-use std::time::Duration;
 
 /// Test that the CLI binary exists
 #[test]
@@ -111,10 +109,8 @@ fn test_create_airdrop_empty_csv_fails() {
 #[test]
 #[serial]
 fn test_deploy_airdrop_creates_on_chain_state() {
-    // Start validator
-    let _validator = TestValidator::start().expect("Failed to start validator");
-
-    // Verify program is loaded
+    // Get shared validator (starts on first call, reuses after)
+    get_shared_validator().expect("Failed to start validator");
     verify_program_loaded(PROGRAM_ID).expect("Program not loaded");
 
     // Create test context
@@ -173,8 +169,7 @@ fn test_deploy_airdrop_creates_on_chain_state() {
 #[test]
 #[serial]
 fn test_claim_airdrop_transfers_tokens() {
-    // Start validator
-    let _validator = TestValidator::start().expect("Failed to start validator");
+    get_shared_validator().expect("Failed to start validator");
 
     // Create test context with 2 claimants
     let ctx = TestContext::new(2).expect("Failed to create test context");
@@ -211,9 +206,6 @@ fn test_claim_airdrop_transfers_tokens() {
     ])
     .expect("deploy-airdrop failed");
 
-    // Small delay to ensure deployment is confirmed
-    thread::sleep(Duration::from_secs(1));
-
     // Claim as first claimant
     let output = run_cli_success(&[
         "claim-airdrop",
@@ -245,8 +237,7 @@ fn test_claim_airdrop_transfers_tokens() {
 #[test]
 #[serial]
 fn test_double_claim_fails() {
-    // Start validator
-    let _validator = TestValidator::start().expect("Failed to start validator");
+    get_shared_validator().expect("Failed to start validator");
 
     // Create test context
     let ctx = TestContext::new(1).expect("Failed to create test context");
@@ -282,8 +273,6 @@ fn test_double_claim_fails() {
     ])
     .expect("deploy-airdrop failed");
 
-    thread::sleep(Duration::from_secs(1));
-
     // First claim should succeed
     run_cli_success(&[
         "claim-airdrop",
@@ -297,8 +286,6 @@ fn test_double_claim_fails() {
         PROGRAM_ID,
     ])
     .expect("First claim should succeed");
-
-    thread::sleep(Duration::from_secs(1));
 
     // Second claim should fail
     let output = run_cli(&[
@@ -335,8 +322,7 @@ fn test_double_claim_fails() {
 #[test]
 #[serial]
 fn test_full_e2e_flow() {
-    // Start validator
-    let _validator = TestValidator::start().expect("Failed to start validator");
+    get_shared_validator().expect("Failed to start validator");
 
     // Create test context with 3 claimants
     let ctx = TestContext::new(3).expect("Failed to create test context");
@@ -379,8 +365,6 @@ fn test_full_e2e_flow() {
     .expect("deploy-airdrop failed");
     println!("{}", output);
 
-    thread::sleep(Duration::from_secs(1));
-
     // Step 3: Each claimant claims
     println!("\n=== Step 3: Claims ===");
     for (i, claimant) in claimants.iter().enumerate() {
@@ -406,9 +390,6 @@ fn test_full_e2e_flow() {
             "Claimant {} should claim successfully",
             i
         );
-
-        // Small delay between claims
-        thread::sleep(Duration::from_millis(500));
     }
 
     println!("\n=== Full E2E flow completed successfully! ===");
