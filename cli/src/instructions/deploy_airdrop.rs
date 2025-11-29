@@ -13,6 +13,7 @@ use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 use solana_client::rpc_client::RpcClient;
 use solana_sdk::program_pack::Pack;
+#[allow(deprecated)]
 use solana_sdk::system_instruction;
 use spl_token::state::Mint;
 use std::{fs::File, path::PathBuf, rc::Rc, str::FromStr};
@@ -166,7 +167,7 @@ pub fn deploy_airdrop(args: DeployAirdropArgs) -> Result<()> {
     // Create Anchor client
     let client = Client::new_with_options(
         args.network.to_cluster(),
-        Rc::new(Keypair::from_bytes(&payer.to_bytes())?),
+        Rc::new(Keypair::try_from(payer.to_bytes().as_ref())?),
         CommitmentConfig::confirmed(),
     );
     let program = client.program(program_id)?;

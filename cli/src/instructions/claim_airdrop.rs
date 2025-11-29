@@ -134,7 +134,7 @@ pub fn claim_airdrop(args: ClaimAirdropArgs) -> Result<()> {
     // Create Anchor client
     let client = Client::new_with_options(
         args.network.to_cluster(),
-        Rc::new(Keypair::from_bytes(&payer.to_bytes())?),
+        Rc::new(Keypair::try_from(payer.to_bytes().as_ref())?),
         CommitmentConfig::confirmed(),
     );
     let program = client.program(program_id)?;
