@@ -311,6 +311,16 @@ function ClaimButton() {
 }
 ```
 
+#### Using a Custom Program ID
+
+If you've deployed your own instance of the contract, pass the `programId` prop:
+
+```tsx
+<AirdropProgramProvider programId="YourProgramIdHere...">
+  <ClaimButton />
+</AirdropProgramProvider>
+```
+
 ## Development
 
 ### Running Tests

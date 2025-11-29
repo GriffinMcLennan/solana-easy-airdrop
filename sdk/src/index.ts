@@ -1,5 +1,8 @@
 // Provider
-export { AirdropProgramProvider } from "./AirdropProgramProvider";
+export {
+  AirdropProgramProvider,
+  type AirdropProgramProviderProps,
+} from "./AirdropProgramProvider";
 
 // Context
 export {
